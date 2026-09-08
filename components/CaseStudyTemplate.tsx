@@ -76,6 +76,16 @@ export default function CaseStudyTemplate({ row }: { row: StoredCaseStudy }) {
                         />
                       </div>
                     )}
+                    {row.photoCredit && (
+                      <a
+                        className="cs-photo-credit"
+                        href={`${row.photoCredit.profileUrl}?utm_source=gushwork&utm_medium=referral`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Photo: {row.photoCredit.name} on Unsplash
+                      </a>
+                    )}
                   </div>
                 ) : (
                   <div className="cs-hero-media--icon" dangerouslySetInnerHTML={{ __html: `<svg viewBox="0 0 256 256" fill="currentColor">${icon}</svg>` }} />
