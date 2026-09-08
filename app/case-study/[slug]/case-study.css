@@ -346,7 +346,7 @@
 .cs-logo img{height:24px;width:auto}
 .cs-nav-right{display:flex;align-items:center;gap:var(--gw-space-32)}
 .cs-nav-links{display:none}
-.cs-nav-cta{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:var(--gw-space-8) var(--gw-space-12);background:var(--gw-color-primary-500);color:var(--gw-color-white);border:1px solid var(--gw-color-neutral-alpha-10-white);border-radius:6px;font:var(--gw-text-body-14-med);letter-spacing:var(--gw-text-body-14-med-tracking)}
+.cs-page a.cs-nav-cta{display:inline-flex;align-items:center;justify-content:center;height:32px;padding:var(--gw-space-8) var(--gw-space-12);background:var(--gw-color-primary-500);color:var(--gw-color-white);border:1px solid var(--gw-color-neutral-alpha-10-white);border-radius:6px;font:var(--gw-text-body-14-med);letter-spacing:var(--gw-text-body-14-med-tracking)}
 .cs-nav-cta:hover{background:var(--gw-color-primary-600)}
 .cs-nav-burger{display:none;width:28px;height:28px;place-items:center;color:var(--gw-color-black)}
 .cs-nav-burger svg{width:20px;height:20px;fill:currentColor}
@@ -425,7 +425,7 @@
 .cs-card-people{width:70px;height:40px}
 .cs-card-people img{width:100%;height:100%;object-fit:contain}
 .cs-card h3{font:var(--gw-text-h7-bold);letter-spacing:var(--gw-text-h7-bold-tracking);color:var(--gw-color-black)}
-.cs-btn{display:flex;align-items:center;justify-content:center;gap:var(--gw-space-8);width:100%;height:44px;padding:var(--gw-space-12) var(--gw-space-16);background:var(--gw-color-primary-500);color:var(--gw-color-white);border-radius:var(--gw-radius-10);font:var(--gw-text-body-14-med);letter-spacing:var(--gw-text-body-14-med-tracking)}
+.cs-page a.cs-btn{display:flex;align-items:center;justify-content:center;gap:var(--gw-space-8);width:100%;height:44px;padding:var(--gw-space-12) var(--gw-space-16);background:var(--gw-color-primary-500);color:var(--gw-color-white);border-radius:var(--gw-radius-10);font:var(--gw-text-body-14-med);letter-spacing:var(--gw-text-body-14-med-tracking)}
 .cs-btn:hover{background:var(--gw-color-primary-600)}
 
 .cs-footer{background:var(--gw-color-black);color:var(--gw-color-white);border-radius:var(--gw-radius-20) var(--gw-radius-20) 0 0;margin-top:calc(-1 * var(--gw-radius-20));padding:var(--gw-space-80) 0 0;overflow:clip}
