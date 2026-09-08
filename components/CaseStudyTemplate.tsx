@@ -16,7 +16,6 @@ function deriveTicks(rawValue: string): string[] {
  *  route. One template, two data sources; never two implementations. */
 export default function CaseStudyTemplate({ row }: { row: StoredCaseStudy }) {
   const icon = pickIcon(row.industry);
-  const initial = (row.quote_author_name || "?").trim().charAt(0).toUpperCase();
   const t1 = deriveTicks(row.stat2_value);
   const t2 = deriveTicks(row.stat3_value);
 
@@ -223,16 +222,17 @@ export default function CaseStudyTemplate({ row }: { row: StoredCaseStudy }) {
                 </div>
               </div>
 
-              <figure className="cs-quote">
-                <p>&ldquo;{row.quote_text}&rdquo;</p>
-                <figcaption className="cs-byline">
-                  <span className="cs-byline-photo">{initial}</span>
-                  <span className="cs-byline-text">
-                    <b>{row.quote_author_name}</b>
-                    <span>{row.quote_author_role}</span>
-                  </span>
-                </figcaption>
-              </figure>
+              {row.quote_text.trim() && (
+                <figure className="cs-quote">
+                  <p>&ldquo;{row.quote_text}&rdquo;</p>
+                  <figcaption className="cs-byline">
+                    <span className="cs-byline-text">
+                      <b>{row.quote_author_name}</b>
+                      <span>{row.quote_author_role}</span>
+                    </span>
+                  </figcaption>
+                </figure>
+              )}
 
               <div className="cs-block">
                 <h2>{SECTION_HEADINGS.section_why_this_matters}</h2>
