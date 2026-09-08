@@ -135,6 +135,13 @@ export async function getCaseStudy(id: string): Promise<StoredCaseStudy | null> 
   return getStore().get(id);
 }
 
+/** Discards a draft — a master doc can hand back dozens of rows at once,
+ *  and not every one is worth keeping in the review queue. Never used on a
+ *  published row (the /generate screen only lists non-published rows). */
+export async function discardDraft(id: string): Promise<void> {
+  await getStore().delete(id);
+}
+
 export async function publish(
   id: string,
   opts: { publishedBy: string; photoUrl?: string; photoCredit?: { name: string; profileUrl: string } | null },

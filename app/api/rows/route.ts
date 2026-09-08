@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { listDrafts } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { listDrafts, discardDraft } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -9,4 +9,16 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   const rows = await listDrafts();
   return NextResponse.json({ rows });
+}
+
+// Discards one unwanted draft row — a master doc can hand back dozens at
+// once (see lib/docParser.ts's parseGoogleDoc), so reviewers need a way to
+// drop the ones they don't want without approving/publishing them.
+export async function DELETE(req: NextRequest) {
+  const { id } = await req.json();
+  if (!id || typeof id !== "string") {
+    return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  }
+  await discardDraft(id);
+  return NextResponse.json({ ok: true });
 }

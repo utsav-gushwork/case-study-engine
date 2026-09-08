@@ -97,6 +97,27 @@ export default function GeneratePage() {
     });
   }, []);
 
+  const discardRow = useCallback(
+    async (row: StoredCaseStudy) => {
+      if (!confirm(`Discard "${row.client_name || "this row"}"? This can't be undone.`)) return;
+      await fetch("/api/rows", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: row.id }),
+      });
+      const remaining = rows.filter((r) => r.id !== row.id);
+      setRows(remaining);
+      setApprovedIds((prev) => {
+        if (!prev.has(row.id)) return prev;
+        const next = new Set(prev);
+        next.delete(row.id);
+        return next;
+      });
+      setActiveId((cur) => (cur === row.id ? remaining[0]?.id ?? null : cur));
+    },
+    [rows],
+  );
+
   const activeIndex = rows.findIndex((r) => r.id === activeId);
   const active = rows[activeIndex];
 
@@ -193,6 +214,14 @@ export default function GeneratePage() {
                   <div className="row-card-domain">{domainOf(row)}</div>
                   <div className="row-card-actions" onClick={(e) => e.stopPropagation()}>
                     {statusChip(row, processing, approved)}
+                    <button
+                      className="gw-icon-btn"
+                      aria-label="Discard this row"
+                      disabled={approved}
+                      onClick={() => discardRow(row)}
+                    >
+                      <i className="ph ph-trash" />
+                    </button>
                     <button
                       className="gw-icon-btn"
                       aria-label="Regenerate hero photo"

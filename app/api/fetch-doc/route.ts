@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { fetchDocText, parseLabelledDoc } from "@/lib/docParser";
+import { fetchDocText, parseGoogleDoc } from "@/lib/docParser";
 import { missingFields, slugify } from "@/lib/schema";
 
 export async function POST(req: NextRequest) {
@@ -9,10 +9,13 @@ export async function POST(req: NextRequest) {
   }
   try {
     const text = await fetchDocText(url);
-    const row = parseLabelledDoc(text);
-    if (!row.case_slug && row.client_name) row.case_slug = slugify(row.client_name);
-    const missing = missingFields(row);
-    return NextResponse.json({ row, missing, status: missing.length ? "needs_review" : "ready" });
+    const parsed = parseGoogleDoc(text);
+    const rows = parsed.map((row) => {
+      if (!row.case_slug && row.client_name) row.case_slug = slugify(row.client_name);
+      const missing = missingFields(row);
+      return { row, missing, status: missing.length ? "needs_review" : "ready" };
+    });
+    return NextResponse.json({ rows });
   } catch (err: any) {
     return NextResponse.json({ error: err.message ?? "Couldn't fetch that doc" }, { status: 422 });
   }

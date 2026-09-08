@@ -87,7 +87,10 @@ export default function HomePage() {
           alert(data.error);
           return;
         }
-        await draftRow(data.row);
+        // A doc can hold one case study or many (a master doc, each entry
+        // marked by its own "Meta Title: ... Case Study | Gushwork" line) —
+        // /api/fetch-doc always returns an array, draft every row it found.
+        for (const r of data.rows as { row: CaseStudyRow }[]) await draftRow(r.row);
       }
       router.push("/generate");
     } catch (err: any) {
