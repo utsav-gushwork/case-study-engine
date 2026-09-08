@@ -274,7 +274,7 @@ export default function GeneratePage() {
           )}
         </div>
 
-        <div className="gw-card preview-pane">
+        <div className="preview-pane">
           <div className="preview-toolbar">
             <span className="preview-toolbar-label">
               <span>Preview</span>
@@ -308,12 +308,14 @@ export default function GeneratePage() {
               </button>
             </div>
           </div>
-          <div className={`preview-frame-wrap${viewport === "mobile" ? " is-mobile" : ""}`}>
-            {active ? (
-              <iframe key={`${active.id}-${frameVersion}`} src={`/preview/${active.id}`} title="Preview" />
-            ) : (
-              <p className="preview-empty">Select a row to preview.</p>
-            )}
+          <div className="preview-panel">
+            <div className={`preview-frame-wrap${viewport === "mobile" ? " is-mobile" : ""}`}>
+              {active ? (
+                <iframe key={`${active.id}-${frameVersion}`} src={`/preview/${active.id}`} title="Preview" />
+              ) : (
+                <p className="preview-empty">Select a row to preview.</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

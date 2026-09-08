@@ -726,11 +726,32 @@ main {
   cursor: not-allowed;
 }
 
+/* Figma's toolbar and white content panel are separate siblings, not one
+   card: the toolbar spans edge-to-edge (flush against the sidebar AND the
+   viewport's right edge), while only the panel below gets the 10px inset
+   on both sides. .preview-pane itself carries no card styling now — that
+   moved to .preview-panel, which wraps only the actual content. */
 .preview-pane {
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.preview-panel {
+  margin-top: 10px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--fig-border);
   border-radius: var(--gw-radius-6); /* 12px — smaller than .gw-card's usual 24px */
+  box-shadow: var(--gw-shadow-s3);
+  overflow: hidden;
 }
 .preview-toolbar {
+  /* Breaks out of the grid column's own 10px gap on both sides — Figma's
+     toolbar is 20px wider than the panel below it, flush left against the
+     sidebar and flush right against the viewport edge. */
+  margin: 0 -10px;
   position: relative;
   display: flex;
   align-items: center;
