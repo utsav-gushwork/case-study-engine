@@ -24,7 +24,12 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, row, action } = body as { id: string; row: CaseStudyRow; action: "draft" | "publish" };
+  const { id, row, action, photo } = body as {
+    id: string;
+    row: CaseStudyRow;
+    action: "draft" | "publish";
+    photo?: { url?: string; credit?: { name: string; profileUrl: string } | null; downloadLocation?: string };
+  };
 
   if (!id || !row) {
     return NextResponse.json({ error: "Missing id or row" }, { status: 400 });
@@ -32,7 +37,7 @@ export async function POST(req: NextRequest) {
 
   const missing = missingFields(row);
   const status = missing.length ? "needs_review" : "ready";
-  await saveDraft(id, row, status as any, who);
+  await saveDraft(id, row, status, who, photo);
 
   if (action === "draft") {
     return NextResponse.json({ status, missing });
@@ -51,8 +56,8 @@ export async function POST(req: NextRequest) {
 
   // Unsplash API terms: ping the download endpoint only once a photo is
   // actually used, i.e. right here at publish — never on every preview render.
-  if (result?.photoCredit && (existing as any)?.photoDownloadLocation) {
-    await pingUnsplashDownload((existing as any).photoDownloadLocation);
+  if (result?.photoCredit && existing?.photoDownloadLocation) {
+    await pingUnsplashDownload(existing.photoDownloadLocation);
   }
 
   return NextResponse.json({ published: result });

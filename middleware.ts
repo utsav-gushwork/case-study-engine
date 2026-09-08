@@ -34,5 +34,15 @@ const middleware: NextMiddleware = (...args) => {
 export default middleware;
 
 export const config = {
-  matcher: ["/", "/published", "/preview/:path*", "/api/fetch-doc", "/api/photo", "/api/publish"],
+  matcher: [
+    "/",
+    "/generate",
+    "/published",
+    "/preview/:path*",
+    "/api/fetch-doc",
+    "/api/photo",
+    "/api/publish",
+    "/api/rows",
+    "/api/published-log",
+  ],
 };

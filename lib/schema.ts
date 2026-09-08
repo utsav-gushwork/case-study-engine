@@ -104,6 +104,7 @@ export interface StoredCaseStudy extends CaseStudyRow {
   status: PublishStatus;
   photoUrl?: string;
   photoCredit?: { name: string; profileUrl: string } | null;
+  photoDownloadLocation?: string;
   createdAt: string;
   createdBy?: string;
   publishedAt?: string;

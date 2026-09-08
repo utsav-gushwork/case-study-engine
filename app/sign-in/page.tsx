@@ -1,14 +1,34 @@
 "use client";
 import { signIn } from "next-auth/react";
 
+function BrandMark() {
+  return (
+    <span className="brand-mark">
+      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M76.6088 4.56344C77.5025 2.36058 75.8495 0 73.4723 0H9.14286C4.0934 0 0 4.0934 0 9.14286V66.7778C0 72.018 5.17081 75.6829 9.9603 73.5568C40.8494 59.8449 64.3785 34.7075 76.6088 4.56344Z"
+          fill="#fff"
+        />
+        <path
+          d="M32.5161 80C31.4022 80 30.9357 78.5531 31.8259 77.8835C54.9007 60.5265 71.4338 35.8047 78.7658 8.0522C78.9403 7.39154 80 7.51618 80 8.19951V70.8571C80 75.9066 75.9066 80 70.8571 80H32.5161Z"
+          fill="#fff"
+        />
+      </svg>
+    </span>
+  );
+}
+
 export default function SignInPage() {
   return (
-    <div style={{ textAlign: "center", paddingTop: 80 }}>
-      <h1>Case Study Engine</h1>
-      <p className="hint">Sign in with your @gushwork.ai Google account to continue.</p>
-      <button className="primary" onClick={() => signIn("google")}>
-        Sign in with Google
-      </button>
+    <div className="signin-page">
+      <div className="gw-card signin-card">
+        <BrandMark />
+        <h1>Case Study Gen Studio</h1>
+        <p>Log in using your Gushwork email id to get access.</p>
+        <button className="gw-btn gw-btn-black" onClick={() => signIn("google")}>
+          Continue with Google <i className="ph-bold ph-arrow-right" />
+        </button>
+      </div>
     </div>
   );
 }

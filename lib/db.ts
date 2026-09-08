@@ -28,6 +28,7 @@ const USE_KV = true; // Upstash connected 8 Sep 2026, prefix KV_REST_API
 export interface PublishedEntry {
   id: string;
   client_name: string;
+  client_website: string;
   publishedAt: string;
   publishedBy: string;
   slug: string;
@@ -111,6 +112,7 @@ export async function saveDraft(
   row: CaseStudyRow,
   status: PublishStatus,
   createdBy?: string,
+  photo?: { url?: string; credit?: { name: string; profileUrl: string } | null; downloadLocation?: string },
 ): Promise<StoredCaseStudy> {
   const existing = await getStore().get(id);
   const stored: StoredCaseStudy = {
@@ -121,8 +123,9 @@ export async function saveDraft(
     createdBy: existing?.createdBy ?? createdBy,
     publishedAt: existing?.publishedAt,
     publishedBy: existing?.publishedBy,
-    photoUrl: existing?.photoUrl,
-    photoCredit: existing?.photoCredit,
+    photoUrl: photo?.url ?? existing?.photoUrl,
+    photoCredit: photo ? photo.credit : existing?.photoCredit,
+    photoDownloadLocation: photo?.downloadLocation ?? existing?.photoDownloadLocation,
   };
   await getStore().set(id, stored);
   return stored;
@@ -156,6 +159,14 @@ export async function getPublished(slug: string): Promise<StoredCaseStudy | null
   return all.find((r) => r.case_slug === slug && r.status === "published") ?? null;
 }
 
+/** Every row not yet published — the /generate screen's row list, newest first. */
+export async function listDrafts(): Promise<StoredCaseStudy[]> {
+  const all = await getStore().list();
+  return all
+    .filter((r) => r.status !== "published")
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
 /** The published log — newest first. */
 export async function listPublished(): Promise<PublishedEntry[]> {
   const all = await getStore().list();
@@ -165,6 +176,7 @@ export async function listPublished(): Promise<PublishedEntry[]> {
     .map((r) => ({
       id: r.id,
       client_name: r.client_name,
+      client_website: r.client_website,
       publishedAt: r.publishedAt ?? "",
       publishedBy: r.publishedBy ?? "",
       slug: r.case_slug,

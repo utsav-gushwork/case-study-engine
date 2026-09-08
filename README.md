@@ -1,9 +1,11 @@
-# Case Study Engine
+# Case Study Gen Studio
 
 Bulk case-study generator, primarily for AEs: turn a CSV row (or a labelled doc) into a full,
 on-brand case-study page — one or a hundred at a time — preview it, then publish live with one
 click. No Anthropic API in the core pipeline; content arrives fully written, the app only
 parses and places it.
+
+(Named "Case Study Engine" in earlier commits — renamed to match Utsav's Figma hifi design.)
 
 - **Product requirements:** https://claude.ai/code/artifact/f212ea71-6a10-42af-b5e9-b817cf06c525
 - **Wireframe:** https://claude.ai/code/artifact/a31d294a-e3b3-4bb0-9745-aa0cecb21293
@@ -15,10 +17,18 @@ parses and places it.
 
 All the functionality is real and wired up — CSV parsing, doc fetching, generation, the
 `/case-study/[slug]` and `/preview/[id]` renderers, publish, the published log. The tool's own
-UI (upload/review screens) is deliberately unstyled — a Figma hifi pass is coming, no point
-designing it twice. The generated case-study pages themselves use the real design tokens
-already established in the gushwork-web template — that output is the actual deliverable, so it
-isn't part of the "low-fi for now" call.
+UI now follows Utsav's Figma hifi design (`GW-Case-Studies`, node `1706:15889`): a Home screen
+(upload + recent published), a `/generate` review screen (row list with regenerate/approve, a
+live preview pane with a Prev/Next pager and a mobile/desktop viewport toggle, and a fixed
+"Download HTML or Publish live" bar), a restyled `/published` log, and a restyled `/sign-in`.
+Built against the Gushwork design system tokens (`colors_and_type.css`) and the
+`sales-dashboard` skill template's card/chip/topbar patterns — plain CSS classes in
+`app/globals.css`, not the skill's own React/`.dc.html` components, since this is a real Next.js
+app. The generated case-study pages themselves use the same real design tokens already
+established in the gushwork-web template — that output is the actual deliverable.
+
+"Approve" (per row) is local staging only, no server call — the fixed bottom bar is what
+actually downloads or publishes, once at least one row is approved.
 
 **The tool is fully usable right now, no manual steps left.** Every route works unauthenticated:
 

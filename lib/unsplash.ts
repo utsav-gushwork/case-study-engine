@@ -8,13 +8,13 @@ export interface UnsplashPhoto {
   downloadLocation: string;
 }
 
-export async function searchHeroPhoto(industry: string): Promise<UnsplashPhoto | null> {
+export async function searchHeroPhoto(industry: string, page = 1): Promise<UnsplashPhoto | null> {
   const key = process.env.UNSPLASH_ACCESS_KEY;
   if (!key) return null;
 
   const query = industry.split(/[,/]/)[0].trim();
   const res = await fetch(
-    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape&content_filter=high`,
+    `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&page=${page}&orientation=landscape&content_filter=high`,
     { headers: { Authorization: `Client-ID ${key}` } },
   );
   if (!res.ok) return null;
