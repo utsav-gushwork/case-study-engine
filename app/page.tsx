@@ -111,7 +111,7 @@ export default function HomePage() {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
       <div>
-        <h1 style={{ fontSize: 56, fontWeight: 700 }}>Welcome{firstName ? `, ${firstName}` : ""}!</h1>
+        <h1 style={{ fontSize: 56, fontWeight: 600 }}>Welcome{firstName ? `, ${firstName}` : ""}!</h1>
         <p className="hint" style={{ marginTop: 20, fontSize: 16 }}>
           You can create and find all case studies published here.
         </p>
