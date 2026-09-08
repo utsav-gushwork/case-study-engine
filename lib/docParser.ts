@@ -141,7 +141,13 @@ export function parseLabelledDoc(text: string): Partial<CaseStudyRow> {
 // guessed at.
 const META_TITLE_RE = /^Meta Title:\s*(.+?)\s+Case Study\s*\|\s*Gushwork\s*$/i;
 const INDUSTRY_COUNTRY_LINE_RE = /^(.+?)\s*·\s*(.+)$/;
-const TLDR_HEADING_RE = /^t;?ldr$/i;
+// 5 of the 21 real entries head this section "T;LDR"; the other 16 use
+// "Problem, Challenge, Solution" instead — same section, same three
+// labelled lines after it. Everything downstream (the TLDR labels *and*
+// the customer/changed/why narrative split) is gated on finding this
+// heading, so missing the second form left 16 entries' TLDR + all three
+// narrative sections silently blank.
+const TLDR_HEADING_RE = /^(t;?ldr|problem,\s*challenge,\s*solution)$/i;
 const BEFORE_GUSHWORK_RE = /^before gushwork$/i;
 const WHY_HEADING_RE = /^why\b/i;
 const TLDR_LABEL_RE = /^(problem|challenge|solution)\s*:\s*(.+)$/i;
@@ -223,15 +229,19 @@ export function parseMasterDocBlock(block: string): Partial<CaseStudyRow> {
     }
   }
 
-  // Three stat value/label pairs between the industry line and "T;LDR". A
-  // bare divider line ("________________") sometimes separates the stats
-  // from the narrative — has no letters at all, cheap and safe to skip.
+  // Three stat value/label pairs between the industry line and the TLDR
+  // heading. A bare divider line ("________________") sometimes separates
+  // the stats from the narrative — cheap and safe to skip on sight, but a
+  // stat *value* can just as easily be a bare number ("100") with no
+  // letters at all, so a general "no letters" filter (as this used to be)
+  // wrongly ate real values too, shifting every pair after it by one.
   const hasLetters = (s: string) => /[a-zA-Z]/.test(s);
+  const isDivider = (s: string) => /^_+$/.test(s);
   const statLines: string[] = [];
   let tldrIdx = -1;
   for (let i = stopAt; i < lines.length; i++) {
     const line = lines[i].trim();
-    if (!line || !hasLetters(line)) continue;
+    if (!line || isDivider(line)) continue;
     if (TLDR_HEADING_RE.test(line)) {
       tldrIdx = i;
       break;
