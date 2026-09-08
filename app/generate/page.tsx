@@ -133,16 +133,21 @@ export default function GeneratePage() {
   const publishApproved = useCallback(async () => {
     setBusyBar("publish");
     try {
+      const failed: string[] = [];
       for (const id of Array.from(approvedIds)) {
         const row = rows.find((r) => r.id === id);
         if (!row) continue;
-        await fetch("/api/publish", {
+        const res = await fetch("/api/publish", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id, row, action: "publish" }),
         });
+        if (!res.ok) failed.push(row.client_name || id);
       }
-      const remaining = rows.filter((r) => !approvedIds.has(r.id));
+      if (failed.length) {
+        alert(`Couldn't publish: ${failed.join(", ")}. Nothing else was affected — try again.`);
+      }
+      const remaining = rows.filter((r) => !approvedIds.has(r.id) || failed.includes(r.client_name || r.id));
       setRows(remaining);
       setApprovedIds(new Set());
       setActiveId((cur) => (remaining.some((r) => r.id === cur) ? cur : remaining[0]?.id ?? null));

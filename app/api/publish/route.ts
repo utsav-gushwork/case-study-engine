@@ -17,7 +17,11 @@ import type { CaseStudyRow } from "@/lib/schema";
 // the moment phase 2 flips the flag on, no other code change needed.
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  // getServerSession() itself throws ("There is a problem with the server
+  // configuration") when NEXTAUTH_SECRET isn't set — true right now, phase 2
+  // hasn't started. Skip the call entirely while auth is off instead of
+  // catching the throw, same shape as middleware.ts's lazy construction.
+  const session = AUTH_ENABLED ? await getServerSession(authOptions) : null;
   const who = session?.user?.email ?? (AUTH_ENABLED ? undefined : "unattributed");
   if (!who) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });

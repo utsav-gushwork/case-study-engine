@@ -53,11 +53,14 @@ export default function HomePage() {
   const draftRow = useCallback(async (partial: Partial<CaseStudyRow>) => {
     const id = "cs-" + Math.random().toString(36).slice(2);
     const row: CaseStudyRow = { ...emptyRow(), ...partial };
-    await fetch("/api/publish", {
+    const res = await fetch("/api/publish", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id, row, action: "draft" }),
     });
+    if (!res.ok) {
+      throw new Error(`Couldn't save that row (${res.status}) — nothing was lost, try again.`);
+    }
   }, []);
 
   const startGenerating = useCallback(async () => {
@@ -87,6 +90,8 @@ export default function HomePage() {
         await draftRow(data.row);
       }
       router.push("/generate");
+    } catch (err: any) {
+      alert(err?.message ?? "Something went wrong — nothing was generated.");
     } finally {
       setBusy(false);
     }
