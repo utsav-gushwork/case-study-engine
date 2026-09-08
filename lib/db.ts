@@ -23,7 +23,7 @@
 
 import type { CaseStudyRow, PublishStatus, StoredCaseStudy } from "./schema";
 
-const USE_KV = false; // flip once a KV store is connected (see above)
+const USE_KV = true; // Upstash connected 8 Sep 2026, prefix KV_REST_API
 
 export interface PublishedEntry {
   id: string;
@@ -94,7 +94,15 @@ function kvStore(): Store {
   };
 }
 
-const store: Store = USE_KV ? kvStore() : memory;
+// Lazy — constructed on first actual use, not at module load. Next.js's
+// build-time "collect page data" pass imports this module before real env
+// vars are necessarily in scope; an eager `kvStore()` call here broke the
+// build for exactly that reason.
+let _store: Store | null = null;
+function getStore(): Store {
+  if (!_store) _store = USE_KV ? kvStore() : memory;
+  return _store;
+}
 
 // ---- public API used by routes/pages ----
 
@@ -104,7 +112,7 @@ export async function saveDraft(
   status: PublishStatus,
   createdBy?: string,
 ): Promise<StoredCaseStudy> {
-  const existing = await store.get(id);
+  const existing = await getStore().get(id);
   const stored: StoredCaseStudy = {
     ...row,
     id,
@@ -116,19 +124,19 @@ export async function saveDraft(
     photoUrl: existing?.photoUrl,
     photoCredit: existing?.photoCredit,
   };
-  await store.set(id, stored);
+  await getStore().set(id, stored);
   return stored;
 }
 
 export async function getCaseStudy(id: string): Promise<StoredCaseStudy | null> {
-  return store.get(id);
+  return getStore().get(id);
 }
 
 export async function publish(
   id: string,
   opts: { publishedBy: string; photoUrl?: string; photoCredit?: { name: string; profileUrl: string } | null },
 ): Promise<StoredCaseStudy | null> {
-  const row = await store.get(id);
+  const row = await getStore().get(id);
   if (!row) return null;
   const updated: StoredCaseStudy = {
     ...row,
@@ -138,19 +146,19 @@ export async function publish(
     photoUrl: opts.photoUrl ?? row.photoUrl,
     photoCredit: opts.photoCredit ?? row.photoCredit,
   };
-  await store.set(id, updated);
+  await getStore().set(id, updated);
   return updated;
 }
 
 /** Reads a published case study by its slug, for the /case-study/[slug] route. */
 export async function getPublished(slug: string): Promise<StoredCaseStudy | null> {
-  const all = await store.list();
+  const all = await getStore().list();
   return all.find((r) => r.case_slug === slug && r.status === "published") ?? null;
 }
 
 /** The published log — newest first. */
 export async function listPublished(): Promise<PublishedEntry[]> {
-  const all = await store.list();
+  const all = await getStore().list();
   return all
     .filter((r) => r.status === "published")
     .sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))
