@@ -108,6 +108,12 @@ h1, h2, h3 {
   color: var(--gw-fg-1);
   margin: 0;
 }
+p {
+  /* Missing from the first pass — the browser's default <p> margin was
+     silently stacking with explicit gaps everywhere (e.g. the extra space
+     below Home's subtitle, on top of its own 40px gap to the cards row). */
+  margin: 0;
+}
 a {
   color: var(--gw-primary-600);
 }
@@ -119,7 +125,7 @@ main {
   z-index: 1;
   max-width: 1280px;
   margin: 0 auto;
-  padding: 48px 80px 100px;
+  padding: 40px 80px 100px;
 }
 @media (max-width: 900px) {
   main {
@@ -484,9 +490,13 @@ main {
   pointer-events: none;
 }
 .published-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   border: 1px solid var(--fig-border);
   border-radius: var(--gw-radius-6);
-  padding: 12px;
+  padding: 13px;
+  flex-shrink: 0;
 }
 .published-row.is-sample {
   border-style: dashed;
@@ -497,27 +507,35 @@ main {
   justify-content: space-between;
   gap: 8px;
 }
-.published-row-top b {
+.published-row-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 162px;
+  min-width: 0;
+}
+.published-row-name-col b {
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.4;
+}
+/* On Home, the "Live" badge is a rounded rectangle, not the pill shape
+   .gw-chip uses elsewhere (Generate's status chips) — scoped override. */
+.published-row-top .gw-chip-live {
+  border-radius: var(--gw-radius-2);
+  height: 24px;
+  flex-shrink: 0;
 }
 .published-row-domain {
   font-size: 10px;
   color: var(--fig-muted-500);
-  margin-top: 4px;
 }
 .published-row-meta {
   font-size: 10px;
   color: var(--fig-muted-500);
-  margin-top: 8px;
 }
 .published-row-meta u {
   text-decoration-color: var(--gw-neutral-300);
-}
-.sample-note {
-  font-size: 11px;
-  color: var(--gw-fg-muted);
-  margin: -2px 0 2px;
 }
 .field-error {
   font-size: 12px;

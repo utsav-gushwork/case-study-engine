@@ -23,6 +23,9 @@ My raw notes:
 const SAMPLE_PUBLISHED = [
   { id: "sample-1", client_name: "Example Client Co", domain: "exampleclient.com" },
   { id: "sample-2", client_name: "Sample Industries", domain: "sampleindustries.com" },
+  { id: "sample-3", client_name: "Acme Logistics", domain: "acmelogistics.com" },
+  { id: "sample-4", client_name: "Bright Path Health", domain: "brightpathhealth.com" },
+  { id: "sample-5", client_name: "Northwind Supply Co", domain: "northwindsupply.com" },
 ];
 
 function domainOf(row: Partial<CaseStudyRow>): string {
@@ -109,7 +112,7 @@ export default function HomePage() {
     <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
       <div>
         <h1 style={{ fontSize: 56, fontWeight: 700 }}>Welcome{firstName ? `, ${firstName}` : ""}!</h1>
-        <p className="hint" style={{ marginTop: 8, fontSize: 16 }}>
+        <p className="hint" style={{ marginTop: 20, fontSize: 16 }}>
           You can create and find all case studies published here.
         </p>
       </div>
@@ -204,20 +207,24 @@ export default function HomePage() {
               SAMPLE_PUBLISHED.map((s) => (
                 <div key={s.id} className="published-row is-sample">
                   <div className="published-row-top">
-                    <b>{s.client_name}</b>
+                    <div className="published-row-name-col">
+                      <b>{s.client_name}</b>
+                      <span className="published-row-domain">{s.domain}</span>
+                    </div>
                     <span className="gw-chip gw-chip-live">Live</span>
                   </div>
-                  <div className="published-row-domain">{s.domain}</div>
                   <div className="published-row-meta">Example — real published case studies will appear here</div>
                 </div>
               ))}
             {published.slice(0, 5).map((r) => (
               <div key={r.id} className="published-row">
                 <div className="published-row-top">
-                  <b>{r.client_name}</b>
+                  <div className="published-row-name-col">
+                    <b>{r.client_name}</b>
+                    <span className="published-row-domain">{domainOf({ client_website: r.client_website }) || r.slug}</span>
+                  </div>
                   <span className="gw-chip gw-chip-live">Live</span>
                 </div>
-                <div className="published-row-domain">{domainOf({ client_website: r.client_website }) || r.slug}</div>
                 <div className="published-row-meta">
                   Published on {new Date(r.publishedAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}, {new Date(r.publishedAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })} by{" "}
                   <u>{r.publishedBy}</u>
