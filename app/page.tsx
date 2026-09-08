@@ -18,6 +18,13 @@ Rules: headline is one line, states the outcome, no full stop. The four section_
 My raw notes:
 [paste your notes, call transcript, or client email here]`;
 
+// Shown only while nothing's really been published yet — clearly marked as
+// examples (dashed border + a caption), never mixed in with real rows.
+const SAMPLE_PUBLISHED = [
+  { id: "sample-1", client_name: "Example Client Co", domain: "exampleclient.com" },
+  { id: "sample-2", client_name: "Sample Industries", domain: "sampleindustries.com" },
+];
+
 function domainOf(row: Partial<CaseStudyRow>): string {
   if (!row.client_website) return "";
   return row.client_website.replace(/^https?:\/\//, "").replace(/\/$/, "");
@@ -31,6 +38,7 @@ export default function HomePage() {
   const [dragging, setDragging] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [published, setPublished] = useState<PublishedEntry[]>([]);
+  const [needsContentError, setNeedsContentError] = useState(false);
 
   useEffect(() => {
     fetch("/api/published-log")
@@ -50,7 +58,11 @@ export default function HomePage() {
   }, []);
 
   const startGenerating = useCallback(async () => {
-    if (!pendingFile && !docUrl.trim()) return;
+    if (!pendingFile && !docUrl.trim()) {
+      setNeedsContentError(true);
+      return;
+    }
+    setNeedsContentError(false);
     setBusy(true);
     try {
       if (pendingFile) {
@@ -67,9 +79,9 @@ export default function HomePage() {
         const data = await res.json();
         if (data.error) {
           alert(data.error);
-        } else {
-          await draftRow(data.row);
+          return;
         }
+        await draftRow(data.row);
       }
       router.push("/generate");
     } finally {
@@ -94,22 +106,24 @@ export default function HomePage() {
   const firstName = session?.user?.name?.split(" ")[0];
 
   return (
-    <div>
-      <h1 style={{ fontSize: 34 }}>Welcome{firstName ? `, ${firstName}` : ""}!</h1>
-      <p className="hint" style={{ marginTop: 8, marginBottom: 28 }}>
-        You can create and find all case studies published here.
-      </p>
+    <div style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+      <div>
+        <h1 style={{ fontSize: 56, fontWeight: 700 }}>Welcome{firstName ? `, ${firstName}` : ""}!</h1>
+        <p className="hint" style={{ marginTop: 8, fontSize: 16 }}>
+          You can create and find all case studies published here.
+        </p>
+      </div>
 
       <div className="home-cards">
         <div className="gw-card home-card">
           <div className="home-card-head">
-            <div>
+            <div className="home-card-head-row">
               <h2>Create new case study</h2>
-              <p className="hint" style={{ marginTop: 4 }}>
-                Drop in a .CSV or google doc link to start generating
-              </p>
+              <span className="icon-badge">
+                <i className="ph-fill ph-sparkle" />
+              </span>
             </div>
-            <i className="ph-fill ph-sparkle" style={{ color: "var(--gw-primary-500)", fontSize: 18 }} />
+            <p>Drop in a .CSV or google doc link to start generating</p>
           </div>
 
           <div className="upload-row">
@@ -128,10 +142,9 @@ export default function HomePage() {
                 if (file) setPendingFile(file);
               }}
             >
-              <i className="ph ph-file-csv" style={{ fontSize: 22 }} />
               <span>{pendingFile ? pendingFile.name : "Drop a CSV here or"}</span>
-              <span className="gw-btn gw-btn-white gw-btn-sm">
-                <i className="ph ph-upload-simple" /> Upload .csv
+              <span className="gw-btn gw-btn-grey">
+                <i className="ph-fill ph-cloud-arrow-up" /> Upload .csv
               </span>
               <input
                 type="file"
@@ -140,7 +153,11 @@ export default function HomePage() {
                 onChange={(e) => setPendingFile(e.target.files?.[0] ?? null)}
               />
             </label>
-            <span className="or-divider">OR</span>
+            <div className="or-divider-col">
+              <span className="rule" />
+              <span>OR</span>
+              <span className="rule" />
+            </div>
             <div className="doc-panel">
               <h3>Drop the Google doc link below</h3>
               <p className="hint">Make sure the doc is on view all settings.</p>
@@ -151,11 +168,16 @@ export default function HomePage() {
                   value={docUrl}
                   onChange={(e) => setDocUrl(e.target.value)}
                 />
+                <button className="gw-btn gw-btn-grey" onClick={startGenerating} disabled={busy} type="button">
+                  Fetch
+                </button>
               </div>
             </div>
           </div>
 
-          <button className="gw-btn gw-btn-black" onClick={startGenerating} disabled={busy || (!pendingFile && !docUrl.trim())}>
+          {needsContentError && <p className="field-error">Attach a CSV or paste a Google Doc link first.</p>}
+
+          <button className="gw-btn gw-btn-black" onClick={startGenerating} disabled={busy}>
             <i className="ph-bold ph-sparkle" /> {busy ? "Starting…" : "Start Generating"}
           </button>
           <div style={{ display: "flex", gap: 16 }}>
@@ -170,11 +192,25 @@ export default function HomePage() {
 
         <div className="gw-card home-card">
           <div className="home-card-head">
-            <h2>Published case studies</h2>
-            <i className="ph-fill ph-broadcast" style={{ color: "var(--gw-primary-500)", fontSize: 18 }} />
+            <div className="home-card-head-row">
+              <h2>Published case studies</h2>
+              <span className="icon-badge">
+                <img src="/assets/home/icon-published-badge.svg" alt="" />
+              </span>
+            </div>
           </div>
           <div className="published-list">
-            {published.length === 0 && <p className="hint">Nothing published yet.</p>}
+            {published.length === 0 &&
+              SAMPLE_PUBLISHED.map((s) => (
+                <div key={s.id} className="published-row is-sample">
+                  <div className="published-row-top">
+                    <b>{s.client_name}</b>
+                    <span className="gw-chip gw-chip-live">Live</span>
+                  </div>
+                  <div className="published-row-domain">{s.domain}</div>
+                  <div className="published-row-meta">Example — real published case studies will appear here</div>
+                </div>
+              ))}
             {published.slice(0, 5).map((r) => (
               <div key={r.id} className="published-row">
                 <div className="published-row-top">
@@ -183,7 +219,8 @@ export default function HomePage() {
                 </div>
                 <div className="published-row-domain">{domainOf({ client_website: r.client_website }) || r.slug}</div>
                 <div className="published-row-meta">
-                  Published on {new Date(r.publishedAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}, {new Date(r.publishedAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })} by {r.publishedBy}
+                  Published on {new Date(r.publishedAt).toLocaleDateString(undefined, { day: "numeric", month: "short" })}, {new Date(r.publishedAt).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })} by{" "}
+                  <u>{r.publishedBy}</u>
                 </div>
               </div>
             ))}

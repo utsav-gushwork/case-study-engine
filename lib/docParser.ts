@@ -37,8 +37,11 @@ export function toPublicExportUrl(docUrl: string): string | null {
   return `https://docs.google.com/document/d/${id}/export?format=txt`;
 }
 
-/** Fetches a public Google Doc's plain-text export. Throws on non-2xx —
- *  the doc must be shared "Anyone with the link can view." */
+/** Fetches a public Google Doc's plain-text export. Throws on non-2xx, and
+ *  also on a 2xx that isn't actually the doc — an unshared doc's export URL
+ *  redirects to Google's HTML sign-in page with a 200, not an error status,
+ *  so a status check alone misses it. The doc must be shared "Anyone with
+ *  the link can view." */
 export async function fetchDocText(docUrl: string): Promise<string> {
   const exportUrl = toPublicExportUrl(docUrl);
   if (!exportUrl) throw new Error("Not a recognizable Google Doc link");
@@ -48,7 +51,13 @@ export async function fetchDocText(docUrl: string): Promise<string> {
       `Couldn't fetch the doc (${res.status}) — is it shared "Anyone with the link can view"?`,
     );
   }
-  return res.text();
+  const text = await res.text();
+  if (/^\s*<(!DOCTYPE html|html)/i.test(text)) {
+    throw new Error(
+      `That doc isn't shared publicly — Google returned a sign-in page instead of its content. Share it as "Anyone with the link can view" and try again.`,
+    );
+  }
+  return text;
 }
 
 /** Splits "Label: value" lines and "Section Heading\n<paragraph>" blocks

@@ -27,10 +27,21 @@
   --gw-neutral-100: #f1f2f3;
   --gw-neutral-200: #e1e3e8;
   --gw-neutral-300: #cfd1d4;
+  --gw-neutral-400: #bbbec4;
   --gw-neutral-500: #959ba4;
   --gw-neutral-600: #6a7077;
   --gw-neutral-700: #535a61;
+  --gw-neutral-900: #262a2e;
   --gw-black: #0d0d0d;
+
+  /* This Figma file's own local neutral scale doesn't line up 1:1 with the
+     skill's colors_and_type.css scale above (its "neutral/300" is our 400,
+     its "neutral/25" is our 50, etc.) — these three are real, distinct
+     values from the Home screen's own measurements, not a token any of the
+     above already covers, so kept separate rather than force-fit. */
+  --fig-border: #e7e8e9;
+  --fig-muted-500: #878b94;
+  --fig-input-bg: #f1f2f3;
 
   --gw-success: #1fc16b;
   --gw-success-bg: #e6f8ef;
@@ -50,15 +61,18 @@
   --gw-font-display: "Vert Grotesk Display", "Inter", ui-sans-serif, system-ui, sans-serif;
   --gw-font-body: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
 
+  --gw-radius-2: 4px;
   --gw-radius-4: 8px;
   --gw-radius-5: 10px;
   --gw-radius-6: 12px;
   --gw-radius-7: 16px;
-  --gw-radius-8: 20px;
+  --gw-radius-8: 24px; /* Card — was wrongly transcribed as 20px (that's --gw-fold-radius, a different, marketing-only concept); fixed 8 Sep against real Figma measurements */
   --gw-radius-full: 999px;
 
   --gw-shadow-s1: 0 1px 2px rgba(10, 13, 20, 0.03);
   --gw-shadow-s2: 0 3px 50px rgba(0, 0, 0, 0.07);
+  --gw-shadow-s3: 0 16px 32px -12px rgba(88, 92, 95, 0.1);
+  --fig-card-shadow: 0 16px 16px rgba(88, 92, 95, 0.1);
 
   --gw-dur-base: 160ms;
   --gw-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -68,12 +82,26 @@
   box-sizing: border-box;
 }
 body {
+  position: relative;
   margin: 0;
   font-family: var(--gw-font-body);
   font-size: 14px;
   letter-spacing: -0.006em;
   color: var(--gw-fg-1);
-  background: var(--gw-neutral-50);
+  background: var(--gw-neutral-100);
+}
+/* The real Figma dot-grid tile (8x8, one soft dot), not a CSS approximation
+   — see design-verification-gotchas memory: textured backgrounds need the
+   real asset. Fixed + low z-index so it sits behind every page's content. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("/assets/dot-pattern-grid.png");
+  background-size: 8px 8px;
+  opacity: 0.2;
+  pointer-events: none;
+  z-index: 0;
 }
 h1, h2, h3 {
   font-family: var(--gw-font-display);
@@ -87,45 +115,55 @@ button {
   font: inherit;
 }
 main {
-  max-width: 1160px;
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 40px 32px 100px;
+  padding: 48px 80px 100px;
+}
+@media (max-width: 900px) {
+  main {
+    padding: 32px 24px 100px;
+  }
 }
 
 /* ── Top bar ─────────────────────────────────────────────────────────── */
 .topbar {
+  position: relative;
+  z-index: 1;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  height: 64px;
-  padding: 0 24px;
-  background: var(--gw-white);
-  border-bottom: 1px solid var(--gw-border);
+  height: 60px;
+  padding: 14px 40px;
+  background: var(--gw-neutral-100);
+  border-bottom: 1.5px solid var(--gw-neutral-300);
 }
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   text-decoration: none;
   color: var(--gw-fg-1);
 }
 .brand-mark {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--gw-radius-4);
   background: var(--gw-black);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 .brand-mark svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
 }
 .brand-name {
   font-family: var(--gw-font-display);
-  font-weight: 700;
-  font-size: 17px;
+  font-weight: 600;
+  font-size: 20px;
   letter-spacing: -0.01em;
 }
 .user-menu {
@@ -183,6 +221,20 @@ main {
 }
 .gw-btn-black:hover {
   background: #1f1f1f;
+}
+.gw-btn-grey {
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--gw-radius-4);
+  background: var(--gw-neutral-500);
+  color: #fff;
+  font-size: 12px;
+}
+.gw-btn-grey:hover {
+  background: var(--gw-neutral-600);
+}
+.gw-btn-grey i {
+  font-size: 14px;
 }
 .gw-btn-black:disabled {
   background: var(--gw-neutral-200);
@@ -254,135 +306,223 @@ main {
   color: var(--gw-fg-3);
 }
 .gw-chip-live {
-  background: var(--gw-success-bg);
-  color: var(--gw-success-strong);
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
 }
 
 /* ── Cards ───────────────────────────────────────────────────────────── */
 .gw-card {
   background: #fff;
-  border: 1px solid var(--gw-border);
+  border: 1px solid var(--fig-border);
   border-radius: var(--gw-radius-8);
-  box-shadow: var(--gw-shadow-s2);
+  box-shadow: var(--gw-shadow-s3);
 }
 .hint {
   color: var(--gw-fg-3);
   font-size: 13px;
 }
 
+/* Small rounded-square icon badge — sits beside a card/section title. */
+.icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--gw-radius-2);
+  background: rgba(0, 112, 255, 0.1);
+  flex-shrink: 0;
+}
+.icon-badge i {
+  font-size: 12px;
+  color: var(--gw-primary-500);
+}
+.icon-badge img {
+  width: 12px;
+  height: 12px;
+}
+
 /* ── Home screen ─────────────────────────────────────────────────────── */
 .home-cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 420px;
   gap: 20px;
-  align-items: start;
+  height: 480px;
 }
-@media (max-width: 800px) {
+@media (max-width: 900px) {
   .home-cards {
     grid-template-columns: 1fr;
+    height: auto;
   }
 }
 .home-card {
-  padding: 28px;
+  height: 100%;
+  min-height: 0;
+  padding: 32px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
 }
 .home-card-head {
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  gap: 12px;
+}
+.home-card-head-row {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 .home-card-head h2 {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 600;
+}
+.home-card-head p {
+  font-size: 14px;
+  color: var(--gw-fg-3);
 }
 .upload-row {
   display: flex;
   align-items: stretch;
-  gap: 16px;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
 }
 .dropzone {
   flex: 1;
   min-width: 0;
-  border: 1.5px dashed var(--gw-border);
-  border-radius: var(--gw-radius-6);
+  border: 2px dashed var(--gw-neutral-400);
+  border-radius: var(--gw-radius-4);
   background: var(--gw-neutral-50);
   padding: 28px 16px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  font-size: 13px;
-  color: var(--gw-fg-3);
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fig-muted-500);
+}
+.or-divider-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.or-divider-col .rule {
+  flex: 1;
+  width: 1px;
+  background: var(--gw-neutral-200);
+}
+.or-divider-col span {
+  color: var(--gw-neutral-400);
+  font-size: 10px;
+  font-weight: 500;
 }
 .doc-panel {
   flex: 1;
   min-width: 0;
-  border: 1px solid var(--gw-border);
-  border-radius: var(--gw-radius-6);
-  padding: 20px;
+  border: 1px solid var(--fig-border);
+  border-radius: var(--gw-radius-4);
+  padding: 32px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  gap: 16px;
 }
 .doc-panel h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
+  color: var(--gw-neutral-900);
   margin: 0;
+}
+.doc-panel .hint {
+  font-size: 12px;
 }
 .field-row {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 16px;
+  background: var(--fig-input-bg);
+  border-radius: var(--gw-radius-6);
+  padding: 4px 4px 4px 12px;
 }
 .field-row input {
   flex: 1;
   min-width: 0;
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--gw-border);
-  border-radius: var(--gw-radius-4);
+  height: 36px;
+  border: 0;
+  background: transparent;
   font: inherit;
-  font-size: 13px;
+  font-size: 14px;
+  color: var(--gw-fg-1);
 }
-.or-divider {
-  align-self: center;
-  color: var(--gw-fg-muted);
-  font-size: 12px;
-  font-weight: 600;
+.field-row input::placeholder {
+  color: var(--fig-muted-500);
 }
 .published-list {
+  position: relative;
+  flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 10px;
-  max-height: 300px;
   overflow-y: auto;
 }
+.published-list::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: -1px;
+  bottom: -1px;
+  height: 90px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), #fff 65%);
+  pointer-events: none;
+}
 .published-row {
-  border: 1px solid var(--gw-border);
+  border: 1px solid var(--fig-border);
   border-radius: var(--gw-radius-6);
-  padding: 12px 14px;
+  padding: 12px;
+}
+.published-row.is-sample {
+  border-style: dashed;
 }
 .published-row-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: 8px;
 }
 .published-row-top b {
   font-size: 14px;
+  font-weight: 600;
 }
 .published-row-domain {
-  font-size: 12px;
-  color: var(--gw-fg-muted);
-  margin-top: 2px;
+  font-size: 10px;
+  color: var(--fig-muted-500);
+  margin-top: 4px;
 }
 .published-row-meta {
-  font-size: 11.5px;
+  font-size: 10px;
+  color: var(--fig-muted-500);
+  margin-top: 8px;
+}
+.published-row-meta u {
+  text-decoration-color: var(--gw-neutral-300);
+}
+.sample-note {
+  font-size: 11px;
   color: var(--gw-fg-muted);
-  margin-top: 6px;
+  margin: -2px 0 2px;
+}
+.field-error {
+  font-size: 12px;
+  color: var(--gw-error);
+  margin: -12px 0 0;
 }
 
 /* ── Generate / review screen ────────────────────────────────────────── */
