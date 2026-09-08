@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextMiddleware, NextResponse } from "next/server";
 import { withAuth } from "next-auth/middleware";
 import { AUTH_ENABLED } from "@/lib/auth";
 
@@ -9,21 +9,29 @@ import { AUTH_ENABLED } from "@/lib/auth";
 // attribution ("who created/published this") possible at all — but that
 // gate is phase 2 (see lib/auth.ts's AUTH_ENABLED).
 //
-// While it's off, this short-circuits BEFORE next-auth's own middleware
-// runs at all — not just via its `authorized` callback — because that
-// middleware calls getToken() unconditionally on every matched request,
-// which needs NEXTAUTH_SECRET even to conclude "no session." No secret is
-// configured in phase 1, and shouldn't need to be.
-const authMiddleware = withAuth({
-  callbacks: {
-    authorized: ({ token }) => !!token,
-  },
-});
+// While it's off, next-auth's own middleware is never even constructed,
+// not just never invoked — building it eagerly at module scope crashed
+// Vercel's edge middleware in production (MIDDLEWARE_INVOCATION_FAILED)
+// with no NEXTAUTH_SECRET set, which next-auth tolerates in `next dev` but
+// not there. Deferring the `withAuth(...)` call into the function body,
+// behind the same flag, means it's only ever constructed once AUTH_ENABLED
+// is true and a secret genuinely exists — same lazy-singleton shape as
+// lib/db.ts's getStore().
+let authMiddleware: NextMiddleware | null = null;
 
-export default function middleware(...args: Parameters<typeof authMiddleware>) {
+const middleware: NextMiddleware = (...args) => {
   if (!AUTH_ENABLED) return NextResponse.next();
+  if (!authMiddleware) {
+    authMiddleware = withAuth({
+      callbacks: {
+        authorized: ({ token }) => !!token,
+      },
+    }) as unknown as NextMiddleware;
+  }
   return authMiddleware(...args);
-}
+};
+
+export default middleware;
 
 export const config = {
   matcher: ["/", "/published", "/preview/:path*", "/api/fetch-doc", "/api/photo", "/api/publish"],
