@@ -751,6 +751,14 @@ main {
    on both sides. .preview-pane itself carries no card styling now — that
    moved to .preview-panel, which wraps only the actual content. */
 .preview-pane {
+  /* .generate-layout uses align-items:start, so a grid column sizes to
+     its own content instead of matching the sidebar's height — without
+     this, the pane only grew as tall as its (fixed-ratio) iframe, leaving
+     unused space below on any window taller than that, and making the
+     sidebar look cut short by comparison even though it was the pane
+     falling short of it. Same height calc as .generate-sidebar, so both
+     columns bottom out at the same line. */
+  height: calc(100vh - 60px - 24px);
   display: flex;
   flex-direction: column;
 }
@@ -857,6 +865,8 @@ main {
   border: 0.4px solid var(--gw-neutral-300);
 }
 .preview-frame-wrap {
+  flex: 1;
+  min-height: 0;
   background: var(--gw-neutral-50);
   display: flex;
   justify-content: center;
@@ -870,15 +880,17 @@ main {
   /* Rendered at a real desktop width so the embedded page evaluates its
      own desktop breakpoint, then zoomed down to whatever width the panel
      actually has — computed in JS (--frame-zoom) since that varies with
-     the window and the sidebar. Height is compensated by the same factor
-     so the visible frame height stays constant as zoom changes. */
+     the window and the sidebar. Height is 100% of the wrap (not a vh
+     guess) so it fills whatever space is actually available, compensated
+     by the same zoom factor so the visible height stays exactly that
+     regardless of zoom level. */
   width: 1440px;
-  height: calc(78vh / var(--frame-zoom, 1));
+  height: calc(100% / var(--frame-zoom, 1));
   zoom: var(--frame-zoom, 1);
 }
 .preview-frame-wrap.is-mobile iframe {
   width: 390px;
-  height: 78vh;
+  height: 100%;
 }
 .preview-empty {
   padding: 80px 20px;
