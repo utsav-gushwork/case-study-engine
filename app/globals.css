@@ -549,13 +549,31 @@ main {
 }
 
 /* ── Generate / review screen ────────────────────────────────────────── */
+/* Generate is a dense app screen, not a reading column — Figma has it run
+   near edge-to-edge (sidebar flush left, ~10px right margin), unlike
+   Home's deliberately narrower 1280px column. Break out of <main>'s
+   shared max-width/padding rather than change those globally. */
+.generate-page {
+  position: relative;
+  width: 100vw;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  margin-top: -64px;
+  margin-bottom: -100px;
+  padding: 0 10px 24px 0;
+}
 .generate-layout {
   display: grid;
   grid-template-columns: 356px 1fr;
-  gap: 20px;
+  gap: 10px;
   align-items: start;
 }
 @media (max-width: 900px) {
+  .generate-page {
+    padding: 0 16px 24px;
+  }
   .generate-layout {
     grid-template-columns: 1fr;
   }
@@ -571,14 +589,13 @@ main {
    never spanning the page. */
 .generate-sidebar {
   position: sticky;
-  top: 124px; /* topbar (60px) + main's top padding (64px) */
-  height: calc(100vh - 124px - 40px);
+  top: 60px; /* topbar height — .generate-page cancels main's own top padding */
+  height: calc(100vh - 60px - 24px);
   display: flex;
   flex-direction: column;
   min-height: 0;
   background: var(--gw-neutral-100);
   border-right: 1.5px solid var(--gw-neutral-300);
-  border-radius: var(--gw-radius-4);
   overflow: hidden;
 }
 .rows-head-wrap {
@@ -714,6 +731,7 @@ main {
   border-radius: var(--gw-radius-6); /* 12px — smaller than .gw-card's usual 24px */
 }
 .preview-toolbar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -723,6 +741,13 @@ main {
   background: var(--gw-neutral-100);
   border-bottom: 1.5px solid var(--gw-neutral-300);
   font-size: 16px;
+}
+/* True horizontal center of the toolbar, independent of the label/toggle
+   flex items either side (space-between alone can't center a 3rd item). */
+.preview-toolbar .pager {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 .preview-toolbar-label {
   display: flex;

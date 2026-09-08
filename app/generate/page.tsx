@@ -193,7 +193,7 @@ export default function GeneratePage() {
   }
 
   return (
-    <div>
+    <div className="generate-page">
       <div className="generate-layout">
         <div className="generate-sidebar">
           <div className="rows-head-wrap">
