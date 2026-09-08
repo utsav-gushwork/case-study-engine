@@ -51,7 +51,9 @@ export default function HomePage() {
   }, []);
 
   const draftRow = useCallback(async (partial: Partial<CaseStudyRow>) => {
-    const id = "cs-" + Math.random().toString(36).slice(2);
+    // Keyed by slug so re-running Start Generating on the same doc updates
+    // the existing draft instead of piling on a duplicate row each time.
+    const id = partial.case_slug ? "cs-" + partial.case_slug : "cs-" + Math.random().toString(36).slice(2);
     const row: CaseStudyRow = { ...emptyRow(), ...partial };
     const res = await fetch("/api/publish", {
       method: "POST",

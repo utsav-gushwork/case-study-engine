@@ -189,9 +189,12 @@ export function parseMasterDocBlock(block: string): Partial<CaseStudyRow> {
   row.case_slug = slugify(clientName);
 
   const headlineLine = metaIdx > 0 ? lines[metaIdx - 1].trim() : "";
-  row.headline = headlineLine.toLowerCase().startsWith(clientName.toLowerCase() + ":")
+  const headline = headlineLine.toLowerCase().startsWith(clientName.toLowerCase() + ":")
     ? headlineLine.slice(clientName.length + 1).trim()
     : headlineLine;
+  // Gushwork headings never end in a full stop — the source doc's headline
+  // line is prose and often has one, so strip it here rather than upstream.
+  row.headline = headline.replace(/\.+$/, "");
 
   // Explicit "Industry:"/"Location:" labels anywhere in the block win first;
   // otherwise fall back to a single "Industry · Country" line. stopAt always
