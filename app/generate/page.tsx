@@ -26,6 +26,21 @@ export default function GeneratePage() {
   const [showChoice, setShowChoice] = useState(false);
   const [frameVersion, setFrameVersion] = useState(0);
   const photoPage = useRef<Map<string, number>>(new Map());
+  const frameWrapRef = useRef<HTMLDivElement>(null);
+  const [desktopZoom, setDesktopZoom] = useState(1);
+
+  // The desktop preview renders the real page at 1440px (its actual desktop
+  // breakpoint) and zooms it down to whatever width the panel has — that
+  // varies with the window, so it's measured rather than assumed.
+  useEffect(() => {
+    const el = frameWrapRef.current;
+    if (!el) return;
+    const update = () => setDesktopZoom(el.clientWidth / 1440);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const fetchPhoto = useCallback(async (row: StoredCaseStudy) => {
     setProcessingIds((prev) => new Set(prev).add(row.id));
@@ -309,7 +324,11 @@ export default function GeneratePage() {
             </div>
           </div>
           <div className="preview-panel">
-            <div className={`preview-frame-wrap${viewport === "mobile" ? " is-mobile" : ""}`}>
+            <div
+              ref={frameWrapRef}
+              className={`preview-frame-wrap${viewport === "mobile" ? " is-mobile" : ""}`}
+              style={{ ["--frame-zoom" as string]: desktopZoom } as React.CSSProperties}
+            >
               {active ? (
                 <iframe key={`${active.id}-${frameVersion}`} src={`/preview/${active.id}`} title="Preview" />
               ) : (

@@ -625,6 +625,16 @@ main {
   padding-right: 4px;
   padding-bottom: 20px;
 }
+.row-list::after {
+  content: "";
+  position: absolute;
+  left: -1px;
+  right: 3px;
+  bottom: -1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--gw-neutral-100) 70%);
+  pointer-events: none;
+}
 .row-card {
   background: #fff;
   border: 1px solid var(--fig-border);
@@ -839,19 +849,27 @@ main {
 }
 .preview-frame-wrap {
   background: var(--gw-neutral-50);
-  padding: 20px;
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 .preview-frame-wrap iframe {
-  width: 100%;
-  height: 78vh;
   border: 0;
   background: #fff;
-  transition: width var(--gw-dur-base) var(--gw-ease);
+}
+.preview-frame-wrap:not(.is-mobile) iframe {
+  /* Rendered at a real desktop width so the embedded page evaluates its
+     own desktop breakpoint, then zoomed down to whatever width the panel
+     actually has — computed in JS (--frame-zoom) since that varies with
+     the window and the sidebar. Height is compensated by the same factor
+     so the visible frame height stays constant as zoom changes. */
+  width: 1440px;
+  height: calc(78vh / var(--frame-zoom, 1));
+  zoom: var(--frame-zoom, 1);
 }
 .preview-frame-wrap.is-mobile iframe {
   width: 390px;
+  height: 78vh;
 }
 .preview-empty {
   padding: 80px 20px;
