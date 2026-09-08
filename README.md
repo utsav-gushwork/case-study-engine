@@ -20,29 +20,16 @@ coming, no point designing it twice. The generated case-study pages themselves u
 design tokens already established in the gushwork-web template — that output is the actual
 deliverable, so it isn't part of the "low-fi for now" call.
 
-**Four manual steps this app can't do for itself** (no API access to provision or connect any
-of these):
+**One manual step left** (three more this app couldn't do for itself are already done):
 
-1. **Connect this repo to the Vercel project.** The project already existed (a placeholder
-   deployed manually, before this code existed) by the time this repo was ready, and Vercel
-   won't auto-reconnect an existing unlinked project to a repo of the same name — it has to be
-   done once from the dashboard: this project → Settings → Git → Connect Repository →
-   `utsav-gushwork/case-study-engine`. Every push auto-deploys after that.
-
-2. **A Google OAuth client**, for the sign-in gate that also makes attribution possible (who
-   created/published each case study). console.cloud.google.com → APIs & Services →
-   Credentials → Create OAuth client ID (Web application) → redirect URI
-   `https://<domain>/api/auth/callback/google`. Sign-in is restricted to `@gushwork.ai` accounts
-   by default (`lib/auth.ts`'s `ALLOWED_DOMAIN`) — change it if that's not the right gate.
-3. **A real database.** Ships with an in-memory store (`lib/db.ts`) that works for local `next
-   dev` but does not survive across Vercel's serverless invocations. Vercel retired its own
-   native "KV" product — connect a store via dashboard → this project → Storage → Browse
-   Storage → Marketplace Database Providers → **Upstash** (the same Redis-backed tech the old
-   Vercel KV ran on) — then flip `USE_KV` to `true` in `lib/db.ts` (`@upstash/redis` is already
-   a dependency). Every route already goes through that file's interface; only the backing
-   store needs this step.
-4. **An Unsplash access key** (unsplash.com/developers, free, 50 req/hour) for the hero-photo
-   search. Optional — generation falls back to the icon treatment with no key set.
+- ~~Connect this repo to the Vercel project~~ — done.
+- ~~Connect an Upstash store, flip `USE_KV`~~ — done; `lib/db.ts` now reads/writes real data.
+- ~~An Unsplash access key~~ — done; hero photos are live, with the required attribution credit.
+- **A Google OAuth client** is what's left — for the sign-in gate that also makes attribution
+  possible (who created/published each case study). console.cloud.google.com → APIs & Services
+  → Credentials → Create OAuth client ID (Web application) → redirect URI
+  `https://<domain>/api/auth/callback/google`. Sign-in is restricted to `@gushwork.ai` accounts
+  by default (`lib/auth.ts`'s `ALLOWED_DOMAIN`) — change it if that's not the right gate.
 
 See `.env.example` for the full list of environment variables.
 
@@ -50,7 +37,7 @@ See `.env.example` for the full list of environment variables.
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in what you have; Google + KV can wait, Unsplash is optional
+cp .env.example .env.local   # fill in what you have; Google can wait
 npm run dev
 ```
 
