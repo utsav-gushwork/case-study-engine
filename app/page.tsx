@@ -180,9 +180,6 @@ export default function HomePage() {
 
           {needsContentError && <p className="field-error">Attach a CSV or paste a Google Doc link first.</p>}
 
-          <button className="gw-btn gw-btn-black" onClick={startGenerating} disabled={busy}>
-            <i className="ph-bold ph-sparkle" /> {busy ? "Starting…" : "Start Generating"}
-          </button>
           <div style={{ display: "flex", gap: 16 }}>
             <button className="gw-btn-ghost gw-btn gw-btn-sm" onClick={downloadTemplate} type="button">
               Download CSV template
@@ -191,6 +188,9 @@ export default function HomePage() {
               Copy prompt for Claude Code
             </button>
           </div>
+          <button className="gw-btn gw-btn-black" onClick={startGenerating} disabled={busy}>
+            <i className="ph-bold ph-sparkle" /> {busy ? "Starting…" : "Start Generating"}
+          </button>
         </div>
 
         <div className="gw-card home-card">
@@ -205,7 +205,7 @@ export default function HomePage() {
           <div className="published-list">
             {published.length === 0 &&
               SAMPLE_PUBLISHED.map((s) => (
-                <div key={s.id} className="published-row is-sample">
+                <div key={s.id} className="published-row">
                   <div className="published-row-top">
                     <div className="published-row-name-col">
                       <b>{s.client_name}</b>

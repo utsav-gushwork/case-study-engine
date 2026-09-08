@@ -477,7 +477,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 .published-list::after {
   content: "";
@@ -497,9 +497,7 @@ main {
   border-radius: var(--gw-radius-6);
   padding: 13px;
   flex-shrink: 0;
-}
-.published-row.is-sample {
-  border-style: dashed;
+  box-shadow: var(--gw-shadow-s1);
 }
 .published-row-top {
   display: flex;
