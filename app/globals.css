@@ -563,6 +563,13 @@ main {
    Home's deliberately narrower 1280px column. Break out of <main>'s
    shared max-width/padding rather than change those globally. */
 .generate-page {
+  /* The sidebar/preview columns are height:calc(100vh - 60px) — exact-fit
+     against the viewport, not a normal scrolling flow — so this wrapper
+     must add no height of its own beyond that. A leftover 24px bottom
+     padding here (probably meant for the pre-fixed-height layout) pushed
+     the whole page 24px past 100vh, making the outer document itself
+     scrollable: at rest, not just on interaction, and enough to un-stick
+     the sidebar and blank out the space below it once scrolled. */
   position: relative;
   width: 100vw;
   left: 50%;
@@ -571,7 +578,7 @@ main {
   margin-right: -50vw;
   margin-top: -64px;
   margin-bottom: -100px;
-  padding: 0 10px 24px 0;
+  padding: 0 10px 0 0;
 }
 .generate-layout {
   display: grid;
