@@ -8,15 +8,35 @@ import { parseCSV, rowsToObjects, toCSV, SEED_ROW } from "@/lib/csv";
 import { emptyRow, type CaseStudyRow } from "@/lib/schema";
 import type { PublishedEntry } from "@/lib/db";
 
-const CONTENT_BRIEF_PROMPT = `Turn my raw notes below into a case-study CSV row for the Case Study Gen Studio.
+const CONTENT_BRIEF_PROMPT = `Turn the Google Doc below into a case-study CSV for the Case Study Gen Studio.
 
-Reply with only a CSV: one header row with these exact columns, then one data row.
+The doc may hold ONE case study, or several bundled together into one "master doc". Handle both: read the whole doc first, find every distinct case study in it — a new one usually starts at its own outcome-led headline plus a line like "Meta Title: {Client} Case Study | Gushwork", or just a clear switch to a different client/company — and produce one CSV data row per case study you find, not just the first one.
+
+If I gave you a Google Docs link rather than pasted text: extract the file ID from it and fetch https://docs.google.com/document/d/{ID}/export?format=txt to get the plain text. If that comes back as an HTML sign-in page instead of real content, the doc isn't shared "Anyone with the link can view" — tell me and stop, don't guess at content. If you have no way to fetch URLs at all, ask me to paste the doc's text instead.
+
+Reply with only a CSV: one header row with these exact columns, then one data row per case study.
 client_name,industry,country,headline,stat1_value,stat1_label,stat2_value,stat2_label,stat3_value,stat3_label,quote_text,quote_author_name,quote_author_role,section_the_customer,section_what_changed,section_why_this_matters,section_closing,tldr_problem,tldr_challenge,tldr_solution,client_website,case_slug
 
-Rules: headline is one line, states the outcome, no full stop. The four section_* columns need the FINISHED paragraph text, not notes — write them properly, in Gushwork's voice (active voice, lead with the outcome). tldr_* columns are optional; leave blank if there isn't enough material for a clean Problem/Challenge/Solution summary.
+For each case study, extract:
+- client_name: the company's name, exactly as written.
+- industry / country: explicit "Industry:"/"Location:" (or "Country:") labels win first; otherwise look for a single line shaped like "{Industry} · {Country}" near the top of the entry.
+- headline: the outcome-led title line right above the entry's own heading/meta-title marker (strip a leading "{Client}: " prefix if it repeats the client name). One line, states the outcome, no full stop — Gushwork headings never end in a period, not even ones you write yourself.
+- stat1/2/3 value + label: three (value, label) pairs — a number/metric followed by its short description — usually sitting together as a block of short lines before the narrative starts, sometimes separated from it by a bare divider line of underscores or dashes. A bare number with no letters ("100", "50+") is still a real value, not a divider — don't skip it.
+- quote_text / quote_author_name / quote_author_role: only fill these in for an actual direct quote in quotation marks, attributed to a named person. A sentence that just mentions someone by name, or a paraphrased/reported claim, is not a quote — leave all three blank rather than force one.
+- section_the_customer: the narrative up through wherever the doc marks the "before" state (often a line like "Before Gushwork") — who the client is and what things looked like beforehand.
+- section_what_changed: what Gushwork actually built or did, and the concrete results — usually the largest, middle part of the narrative. The doc's own bespoke sub-headings here ("What Gushwork built", "What changed for X", ...) are structure, not content to repeat verbatim — write this as one flowing paragraph, not a list of headed fragments.
+- section_why_this_matters: the closing reflection on why the result matters, usually opening at a heading starting "Why..." — everything from there to (but not including) any final wrap-up/next-steps note.
+- section_closing: only fill this in if the doc has a distinct closing/wrap-up statement separate from section_why_this_matters — otherwise leave it blank rather than duplicate content or invent one.
+- tldr_problem / tldr_challenge / tldr_solution: look for a section headed "TLDR" (or "T;LDR", or "Problem, Challenge, Solution" — same section, different label) with "Problem:"/"Challenge:"/"Solution:" lines under it. Leave all three blank if that entry doesn't have this structure.
+- client_website: only if the client's own site URL actually appears in the doc; otherwise blank.
+- case_slug: the client name, lowercased, with spaces/punctuation collapsed to single hyphens (e.g. "Percy's Lawn Care" → "percy-s-lawn-care").
 
-My raw notes:
-[paste your notes, call transcript, or client email here]`;
+Writing rules for every section_*/tldr_* field: finished, Gushwork-voice paragraphs, not raw notes — active voice, lead with the outcome, sentence case, no exclamation marks. Use the doc's own real sentences and numbers; never invent facts, quotes, or results that aren't in the source.
+
+CSV formatting: quote any field containing a comma, quote mark, or line break, doubling internal quote marks (standard RFC4180) — the section_* fields are full paragraphs and will need this.
+
+Google Doc:
+[paste the doc link, or its full text, here]`;
 
 // Shown only while nothing's really been published yet — clearly marked as
 // examples (dashed border + a caption), never mixed in with real rows.
