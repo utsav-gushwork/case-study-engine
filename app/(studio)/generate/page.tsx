@@ -28,14 +28,23 @@ export default function GeneratePage() {
   const photoPage = useRef<Map<string, number>>(new Map());
   const frameWrapRef = useRef<HTMLDivElement>(null);
   const [desktopZoom, setDesktopZoom] = useState(1);
+  const [desktopNativeHeight, setDesktopNativeHeight] = useState(900);
 
   // The desktop preview renders the real page at 1440px (its actual desktop
   // breakpoint) and zooms it down to whatever width the panel has — that
-  // varies with the window, so it's measured rather than assumed.
+  // varies with the window, so it's measured rather than assumed. Height is
+  // measured the same way and pre-divided by zoom in JS (not left to a CSS
+  // calc(100%/zoom)) — a percentage height resolved *inside* a zoomed box
+  // is already implicitly scaled by that same zoom, so doing it again in
+  // CSS double-compensates and the frame overflows its own wrap.
   useEffect(() => {
     const el = frameWrapRef.current;
     if (!el) return;
-    const update = () => setDesktopZoom(el.clientWidth / 1440);
+    const update = () => {
+      const zoom = el.clientWidth / 1440;
+      setDesktopZoom(zoom);
+      setDesktopNativeHeight(el.clientHeight / zoom);
+    };
     update();
     const ro = new ResizeObserver(update);
     ro.observe(el);
@@ -327,7 +336,12 @@ export default function GeneratePage() {
             <div
               ref={frameWrapRef}
               className={`preview-frame-wrap${viewport === "mobile" ? " is-mobile" : ""}`}
-              style={{ ["--frame-zoom" as string]: desktopZoom } as React.CSSProperties}
+              style={
+                {
+                  ["--frame-zoom" as string]: desktopZoom,
+                  ["--frame-native-height" as string]: `${desktopNativeHeight}px`,
+                } as React.CSSProperties
+              }
             >
               {active ? (
                 <iframe key={`${active.id}-${frameVersion}`} src={`/preview/${active.id}`} title="Preview" />

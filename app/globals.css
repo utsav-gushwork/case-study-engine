@@ -880,12 +880,12 @@ main {
   /* Rendered at a real desktop width so the embedded page evaluates its
      own desktop breakpoint, then zoomed down to whatever width the panel
      actually has — computed in JS (--frame-zoom) since that varies with
-     the window and the sidebar. Height is 100% of the wrap (not a vh
-     guess) so it fills whatever space is actually available, compensated
-     by the same zoom factor so the visible height stays exactly that
-     regardless of zoom level. */
+     the window and the sidebar. --frame-native-height is the wrap's
+     measured pixel height pre-divided by that same zoom in JS: a plain
+     height:100% would resolve *inside* the already-zoomed box, which
+     silently divides by zoom a second time and overflows the wrap. */
   width: 1440px;
-  height: calc(100% / var(--frame-zoom, 1));
+  height: var(--frame-native-height, 100%);
   zoom: var(--frame-zoom, 1);
 }
 .preview-frame-wrap.is-mobile iframe {
