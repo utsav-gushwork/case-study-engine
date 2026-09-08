@@ -599,7 +599,7 @@ main {
 .generate-sidebar {
   position: sticky;
   top: 60px; /* topbar height — .generate-page cancels main's own top padding */
-  height: calc(100vh - 60px - 24px);
+  height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -758,7 +758,7 @@ main {
      sidebar look cut short by comparison even though it was the pane
      falling short of it. Same height calc as .generate-sidebar, so both
      columns bottom out at the same line. */
-  height: calc(100vh - 60px - 24px);
+  height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
 }
