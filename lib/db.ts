@@ -8,13 +8,18 @@
 // tool has no way to provision a managed database on your behalf (no
 // Vercel Storage API access), so the one remaining manual step is yours:
 //
-//   1. Vercel dashboard → this project → Storage → Create Database → KV.
-//   2. Connect it to this project (injects KV_REST_API_URL / _TOKEN).
-//   3. `npm i @vercel/kv`, then flip USE_KV below to `true`.
+//   1. Vercel dashboard → this project → Storage → Browse Storage →
+//      Marketplace Database Providers → Upstash (Vercel retired its own
+//      native "KV" product in favor of this marketplace; Upstash is the
+//      same Redis-backed tech the old Vercel KV ran on).
+//   2. Connect it to this project — injects either UPSTASH_REDIS_REST_URL/
+//      _TOKEN or KV_REST_API_URL/_TOKEN depending on how the integration
+//      names things; the code below checks both, so either works.
+//   3. Flip USE_KV below to `true` (@upstash/redis is already a dependency).
 //
 // Everything else — routes, parsing, generation, the publish flow — is real
 // and already wired to this interface; only the backing store needs that
-// one dashboard step, since this tool can't create a KV/Postgres store for you.
+// one dashboard step, since this tool can't create a database for you.
 
 import type { CaseStudyRow, PublishStatus, StoredCaseStudy } from "./schema";
 
@@ -53,28 +58,38 @@ const memory: Store = {
   },
 };
 
-// ---- @vercel/kv implementation (ready to enable — see USE_KV above) ----
+// ---- Upstash Redis implementation (ready to enable — see USE_KV above) ----
+// Reads either env-var naming the Vercel↔Upstash marketplace integration
+// might inject — see the gap notice above for why there are two.
 function kvStore(): Store {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { kv } = require("@vercel/kv");
+  const { Redis } = require("@upstash/redis");
+  const url = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+  if (!url || !token) {
+    throw new Error(
+      "USE_KV is true but no Upstash/KV env vars were found — connect the store first (see lib/db.ts).",
+    );
+  }
+  const redis = new Redis({ url, token });
   const KEY_PREFIX = "case_study:";
   const INDEX_KEY = "case_study_ids";
   return {
     async get(id) {
-      return (await kv.get(KEY_PREFIX + id)) ?? null;
+      return (await redis.get(KEY_PREFIX + id)) ?? null;
     },
     async set(id, row) {
-      await kv.set(KEY_PREFIX + id, row);
-      await kv.sadd(INDEX_KEY, id);
+      await redis.set(KEY_PREFIX + id, row);
+      await redis.sadd(INDEX_KEY, id);
     },
     async list() {
-      const ids: string[] = await kv.smembers(INDEX_KEY);
-      const rows = await Promise.all(ids.map((id) => kv.get(KEY_PREFIX + id)));
+      const ids: string[] = await redis.smembers(INDEX_KEY);
+      const rows = await Promise.all(ids.map((id) => redis.get(KEY_PREFIX + id)));
       return rows.filter(Boolean) as StoredCaseStudy[];
     },
     async delete(id) {
-      await kv.del(KEY_PREFIX + id);
-      await kv.srem(INDEX_KEY, id);
+      await redis.del(KEY_PREFIX + id);
+      await redis.srem(INDEX_KEY, id);
     },
   };
 }

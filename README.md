@@ -35,10 +35,12 @@ of these):
    `https://<domain>/api/auth/callback/google`. Sign-in is restricted to `@gushwork.ai` accounts
    by default (`lib/auth.ts`'s `ALLOWED_DOMAIN`) — change it if that's not the right gate.
 3. **A real database.** Ships with an in-memory store (`lib/db.ts`) that works for local `next
-   dev` but does not survive across Vercel's serverless invocations. Connect a store —
-   dashboard → this project → Storage → Create Database → KV — then flip `USE_KV` to `true` in
-   `lib/db.ts` (`@vercel/kv` is already a dependency). Every route already goes through that
-   file's interface; only the backing store needs this step.
+   dev` but does not survive across Vercel's serverless invocations. Vercel retired its own
+   native "KV" product — connect a store via dashboard → this project → Storage → Browse
+   Storage → Marketplace Database Providers → **Upstash** (the same Redis-backed tech the old
+   Vercel KV ran on) — then flip `USE_KV` to `true` in `lib/db.ts` (`@upstash/redis` is already
+   a dependency). Every route already goes through that file's interface; only the backing
+   store needs this step.
 4. **An Unsplash access key** (unsplash.com/developers, free, 50 req/hour) for the hero-photo
    search. Optional — generation falls back to the icon treatment with no key set.
 
