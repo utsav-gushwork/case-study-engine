@@ -31,6 +31,7 @@
   --gw-neutral-500: #959ba4;
   --gw-neutral-600: #6a7077;
   --gw-neutral-700: #535a61;
+  --gw-neutral-800: #4d545c;
   --gw-neutral-900: #262a2e;
   --gw-black: #0d0d0d;
 
@@ -50,6 +51,17 @@
   --gw-warning-bg: #fff8d6;
   --gw-error: #fb3748;
   --gw-error-bg: #ffebed;
+
+  /* Status chip palette — measured off the Generate/Home screens directly,
+     used as rgba()/hex literals rather than the tokens above since neither
+     --gw-success-bg/--gw-warning-bg nor --gw-primary-50 land on these exact
+     values. */
+  --fig-chip-green-bg: rgba(34, 197, 94, 0.1);
+  --fig-chip-green-fg: #16a34a;
+  --fig-chip-yellow-bg: rgba(245, 158, 11, 0.1);
+  --fig-chip-yellow-fg: #d97706;
+  --fig-chip-blue-bg: rgba(0, 112, 255, 0.1);
+  --fig-chip-blue-fg: #0070ff;
 
   --gw-fg-1: var(--gw-black);
   --gw-fg-2: var(--gw-neutral-700);
@@ -288,32 +300,29 @@ main {
 .gw-chip {
   display: inline-flex;
   align-items: center;
-  height: 22px;
-  padding: 0 9px;
-  border-radius: var(--gw-radius-full);
-  font-size: 11px;
-  font-weight: 600;
+  height: 24px;
+  padding: 4px 8px;
+  border-radius: var(--gw-radius-2);
+  font-size: 10px;
+  font-weight: 500;
   white-space: nowrap;
 }
-.gw-chip-ready {
-  background: var(--gw-success-bg);
-  color: var(--gw-success-strong);
+.gw-chip-ready,
+.gw-chip-live {
+  background: var(--fig-chip-green-bg);
+  color: var(--fig-chip-green-fg);
 }
 .gw-chip-processing {
-  background: var(--gw-warning-bg);
-  color: var(--gw-warning-strong);
+  background: var(--fig-chip-yellow-bg);
+  color: var(--fig-chip-yellow-fg);
 }
 .gw-chip-approved {
-  background: var(--gw-primary-50);
-  color: var(--gw-primary-700);
+  background: var(--fig-chip-blue-bg);
+  color: var(--fig-chip-blue-fg);
 }
 .gw-chip-review {
   background: var(--gw-neutral-100);
   color: var(--gw-fg-3);
-}
-.gw-chip-live {
-  background: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
 }
 
 /* ── Cards ───────────────────────────────────────────────────────────── */
@@ -520,8 +529,6 @@ main {
 /* On Home, the "Live" badge is a rounded rectangle, not the pill shape
    .gw-chip uses elsewhere (Generate's status chips) — scoped override. */
 .published-row-top .gw-chip-live {
-  border-radius: var(--gw-radius-2);
-  height: 24px;
   flex-shrink: 0;
 }
 .published-row-domain {
@@ -544,7 +551,7 @@ main {
 /* ── Generate / review screen ────────────────────────────────────────── */
 .generate-layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 356px 1fr;
   gap: 20px;
   align-items: start;
 }
@@ -552,111 +559,237 @@ main {
   .generate-layout {
     grid-template-columns: 1fr;
   }
+  .generate-sidebar {
+    position: static !important;
+    height: auto !important;
+  }
 }
-.rows-head {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--gw-fg-muted);
-  margin: 0 0 12px 2px;
-}
-.row-list {
+/* Sticky within the page, not a full-width fixed bar — matches Figma:
+   the row list scrolls in its own area (real batches run into the dozens,
+   from one master-doc fetch) and the publish bar sits pinned to the
+   bottom of just this column, sized and colored to match the sidebar,
+   never spanning the page. */
+.generate-sidebar {
+  position: sticky;
+  top: 124px; /* topbar (60px) + main's top padding (64px) */
+  height: calc(100vh - 124px - 40px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-bottom: 90px;
+  min-height: 0;
+  background: var(--gw-neutral-100);
+  border-right: 1.5px solid var(--gw-neutral-300);
+  border-radius: var(--gw-radius-4);
+  overflow: hidden;
+}
+.rows-head-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 20px 0;
+}
+.rows-head {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--gw-neutral-800);
+  margin: 0 0 12px 2px;
+  flex-shrink: 0;
+}
+.row-list {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-right: 4px;
+  padding-bottom: 20px;
 }
 .row-card {
   background: #fff;
-  border: 1px solid var(--gw-border);
-  border-radius: var(--gw-radius-7);
-  padding: 16px;
+  border: 1px solid var(--fig-border);
+  border-radius: var(--gw-radius-6);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   cursor: pointer;
+  flex-shrink: 0;
   transition: border-color var(--gw-dur-base) var(--gw-ease);
 }
 .row-card.is-active {
-  border-color: var(--gw-fg-1);
+  border-color: var(--gw-neutral-500);
+  box-shadow: var(--gw-shadow-s3);
 }
 .row-card-top {
   display: flex;
-  align-items: baseline;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
 }
+.row-card-name-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 162px;
+  min-width: 0;
+}
 .row-card-top b {
-  font-size: 14.5px;
+  font-size: 16px;
   font-weight: 600;
+  line-height: 1.4;
 }
 .row-card-index {
-  font-size: 11.5px;
-  color: var(--gw-fg-muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--fig-muted-500);
   flex-shrink: 0;
 }
 .row-card-domain {
-  font-size: 12px;
-  color: var(--gw-fg-muted);
-  margin-top: 2px;
+  font-size: 10px;
+  color: var(--fig-muted-500);
+}
+.row-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row-card-divider {
+  height: 1px;
+  background: var(--fig-border);
 }
 .row-card-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 14px;
+  gap: 4px;
 }
 .row-card-actions .gw-chip {
   margin-right: auto;
 }
+.row-action-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 4px 8px;
+  border-radius: var(--gw-radius-2);
+  border: 0;
+  background: var(--gw-black);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.row-action-btn:disabled {
+  background: var(--fig-border);
+  color: var(--gw-neutral-600);
+  cursor: not-allowed;
+}
+.row-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gw-fg-2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.row-icon-btn i {
+  font-size: 12px;
+}
+.row-icon-btn:disabled {
+  color: var(--gw-neutral-300);
+  cursor: not-allowed;
+}
 
 .preview-pane {
   overflow: hidden;
+  border-radius: var(--gw-radius-6); /* 12px — smaller than .gw-card's usual 24px */
 }
 .preview-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--gw-border);
-  font-size: 13px;
+  height: 48px;
+  padding: 0 40px;
+  background: var(--gw-neutral-100);
+  border-bottom: 1.5px solid var(--gw-neutral-300);
+  font-size: 16px;
 }
 .preview-toolbar-label {
-  color: var(--gw-fg-3);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--gw-neutral-600);
 }
 .preview-toolbar-label b {
-  color: var(--gw-fg-1);
+  font-weight: 500;
+  color: var(--gw-neutral-900);
 }
 .pager {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: var(--gw-fg-3);
+  gap: 4px;
+  color: var(--gw-neutral-700);
 }
 .pager button {
   background: none;
   border: 0;
-  color: var(--gw-fg-2);
+  color: var(--gw-neutral-700);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 10px;
+  font-weight: 500;
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  padding: 4px 8px;
+  height: 24px;
 }
 .pager button:disabled {
   color: var(--gw-neutral-300);
   cursor: not-allowed;
 }
-.pager-count {
-  background: var(--gw-neutral-100);
-  border-radius: var(--gw-radius-4);
-  padding: 3px 8px;
+.pager button i {
   font-size: 12px;
+}
+.pager-count {
+  background: var(--fig-border);
+  border: 0.4px solid var(--gw-neutral-300);
+  border-radius: var(--gw-radius-2);
+  padding: 4px 8px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
   font-weight: 600;
-  color: var(--gw-fg-1);
+  text-transform: uppercase;
+  color: var(--gw-neutral-900);
 }
 .viewport-toggle {
   display: flex;
   gap: 4px;
+}
+.viewport-toggle .gw-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: none;
+}
+.viewport-toggle .gw-icon-btn i {
+  font-size: 16px;
+}
+.viewport-toggle .gw-icon-btn.is-active {
+  background: var(--fig-border);
+  border: 0.4px solid var(--gw-neutral-300);
 }
 .preview-frame-wrap {
   background: var(--gw-neutral-50);
@@ -680,34 +813,43 @@ main {
   color: var(--gw-fg-muted);
 }
 
-/* ── Fixed bottom bar ────────────────────────────────────────────────── */
+/* ── Publish bar — pinned to the bottom of the sidebar column, same bg,
+   delineated by just the top border. A fade where the row list meets it
+   mirrors Home's published-list treatment. ─────────────────────────────── */
 .publish-bar {
-  position: fixed;
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  background: var(--gw-neutral-100);
+  border-top: 1.5px solid var(--gw-neutral-300);
+}
+.publish-bar::before {
+  content: "";
+  position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 32px;
-  background: var(--gw-black);
-  color: #fff;
-  z-index: 20;
+  bottom: 100%;
+  height: 48px;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.8));
+  pointer-events: none;
 }
 .publish-bar-count {
-  font-size: 13.5px;
-  color: rgba(255, 255, 255, 0.8);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--fig-muted-500);
 }
 .publish-bar-count b {
-  color: #fff;
+  color: var(--gw-fg-1);
 }
 .publish-bar-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
-.publish-bar .gw-btn-white {
-  border-color: rgba(255, 255, 255, 0.25);
+.publish-bar-actions .gw-btn {
+  flex: 1;
 }
 
 /* ── Published page ──────────────────────────────────────────────────── */

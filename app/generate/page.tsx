@@ -23,6 +23,7 @@ export default function GeneratePage() {
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [viewport, setViewport] = useState<"desktop" | "mobile">("desktop");
   const [busyBar, setBusyBar] = useState<"download" | "publish" | null>(null);
+  const [showChoice, setShowChoice] = useState(false);
   const [frameVersion, setFrameVersion] = useState(0);
   const photoPage = useRef<Map<string, number>>(new Map());
 
@@ -192,62 +193,92 @@ export default function GeneratePage() {
   }
 
   return (
-    <div style={{ paddingBottom: approvedIds.size > 0 ? 70 : 0 }}>
+    <div>
       <div className="generate-layout">
-        <div>
-          <p className="rows-head">{rows.length} rows</p>
-          <div className="row-list">
-            {rows.map((row, i) => {
-              const processing = processingIds.has(row.id);
-              const approved = approvedIds.has(row.id);
-              const canApprove = row.status === "ready" && !processing;
-              return (
-                <div
-                  key={row.id}
-                  className={`row-card${row.id === activeId ? " is-active" : ""}`}
-                  onClick={() => setActiveId(row.id)}
-                >
-                  <div className="row-card-top">
-                    <b>{row.client_name || "Untitled"}</b>
-                    <span className="row-card-index">{i + 1}/{rows.length}</span>
+        <div className="generate-sidebar">
+          <div className="rows-head-wrap">
+            <p className="rows-head">{rows.length} rows</p>
+            <div className="row-list">
+              {rows.map((row, i) => {
+                const processing = processingIds.has(row.id);
+                const approved = approvedIds.has(row.id);
+                const canApprove = row.status === "ready" && !processing;
+                return (
+                  <div
+                    key={row.id}
+                    className={`row-card${row.id === activeId ? " is-active" : ""}`}
+                    onClick={() => setActiveId(row.id)}
+                  >
+                    <div className="row-card-top">
+                      <div className="row-card-name-col">
+                        <b>{row.client_name || "Untitled"}</b>
+                        <span className="row-card-domain">{domainOf(row)}</span>
+                      </div>
+                      <span className="row-card-index">{i + 1}/{rows.length}</span>
+                    </div>
+                    <div className="row-card-body">
+                      <div className="row-card-divider" />
+                      <div className="row-card-actions" onClick={(e) => e.stopPropagation()}>
+                        {statusChip(row, processing, approved)}
+                        <button
+                          className="row-icon-btn"
+                          aria-label="Discard this row"
+                          disabled={approved}
+                          onClick={() => discardRow(row)}
+                        >
+                          <i className="ph ph-trash" />
+                        </button>
+                        <button
+                          className="row-icon-btn"
+                          aria-label="Regenerate hero photo"
+                          disabled={processing}
+                          onClick={() => regenerate(row)}
+                        >
+                          <i className="ph ph-arrows-clockwise" />
+                        </button>
+                        <button
+                          className="row-action-btn"
+                          disabled={!canApprove && !approved}
+                          onClick={() => toggleApprove(row.id)}
+                        >
+                          {approved ? "Unapprove" : "Approve"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="row-card-domain">{domainOf(row)}</div>
-                  <div className="row-card-actions" onClick={(e) => e.stopPropagation()}>
-                    {statusChip(row, processing, approved)}
-                    <button
-                      className="gw-icon-btn"
-                      aria-label="Discard this row"
-                      disabled={approved}
-                      onClick={() => discardRow(row)}
-                    >
-                      <i className="ph ph-trash" />
-                    </button>
-                    <button
-                      className="gw-icon-btn"
-                      aria-label="Regenerate hero photo"
-                      disabled={processing}
-                      onClick={() => regenerate(row)}
-                    >
-                      <i className="ph ph-arrows-clockwise" />
-                    </button>
-                    <button
-                      className="gw-btn gw-btn-sm gw-btn-black"
-                      disabled={!canApprove && !approved}
-                      onClick={() => toggleApprove(row.id)}
-                    >
-                      {approved ? "Unapprove" : "Approve"}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+
+          {approvedIds.size > 0 && (
+            <div className="publish-bar">
+              <span className="publish-bar-count">
+                <b>{approvedIds.size}</b> of {rows.length} Case Studies approved
+              </span>
+              {showChoice ? (
+                <div className="publish-bar-actions">
+                  <button className="gw-btn gw-btn-white" onClick={downloadHTML} disabled={busyBar !== null}>
+                    <i className="ph ph-download-simple" /> {busyBar === "download" ? "Downloading…" : "Download HTML"}
+                  </button>
+                  <button className="gw-btn gw-btn-black" onClick={publishApproved} disabled={busyBar !== null}>
+                    <i className="ph-bold ph-broadcast" /> {busyBar === "publish" ? "Publishing…" : "Publish live"}
+                  </button>
+                </div>
+              ) : (
+                <button className="gw-btn gw-btn-black" style={{ width: "100%" }} onClick={() => setShowChoice(true)}>
+                  Download or Publish
+                </button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="gw-card preview-pane">
           <div className="preview-toolbar">
             <span className="preview-toolbar-label">
-              Preview <b>{active?.client_name || "—"}</b>
+              <span>Preview</span>
+              <b>{active?.client_name || "—"}</b>
             </span>
             <div className="pager">
               <button onClick={() => goTo(-1)} disabled={activeIndex <= 0}>
@@ -286,22 +317,6 @@ export default function GeneratePage() {
           </div>
         </div>
       </div>
-
-      {approvedIds.size > 0 && (
-        <div className="publish-bar">
-          <span className="publish-bar-count">
-            <b>{approvedIds.size}</b> of {rows.length} Case Studies approved
-          </span>
-          <div className="publish-bar-actions">
-            <button className="gw-btn gw-btn-white" onClick={downloadHTML} disabled={busyBar !== null}>
-              <i className="ph ph-download-simple" /> {busyBar === "download" ? "Downloading…" : "Download HTML"}
-            </button>
-            <button className="gw-btn gw-btn-black" onClick={publishApproved} disabled={busyBar !== null}>
-              <i className="ph-bold ph-broadcast" /> {busyBar === "publish" ? "Publishing…" : "Publish live"}
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
