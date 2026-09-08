@@ -20,19 +20,26 @@ coming, no point designing it twice. The generated case-study pages themselves u
 design tokens already established in the gushwork-web template — that output is the actual
 deliverable, so it isn't part of the "low-fi for now" call.
 
-**Three manual steps this app can't do for itself** (no API access to provision any of these):
+**Four manual steps this app can't do for itself** (no API access to provision or connect any
+of these):
 
-1. **A Google OAuth client**, for the sign-in gate that also makes attribution possible (who
+1. **Connect this repo to the Vercel project.** The project already existed (a placeholder
+   deployed manually, before this code existed) by the time this repo was ready, and Vercel
+   won't auto-reconnect an existing unlinked project to a repo of the same name — it has to be
+   done once from the dashboard: this project → Settings → Git → Connect Repository →
+   `utsav-gushwork/case-study-engine`. Every push auto-deploys after that.
+
+2. **A Google OAuth client**, for the sign-in gate that also makes attribution possible (who
    created/published each case study). console.cloud.google.com → APIs & Services →
    Credentials → Create OAuth client ID (Web application) → redirect URI
    `https://<domain>/api/auth/callback/google`. Sign-in is restricted to `@gushwork.ai` accounts
    by default (`lib/auth.ts`'s `ALLOWED_DOMAIN`) — change it if that's not the right gate.
-2. **A real database.** Ships with an in-memory store (`lib/db.ts`) that works for local `next
+3. **A real database.** Ships with an in-memory store (`lib/db.ts`) that works for local `next
    dev` but does not survive across Vercel's serverless invocations. Connect a store —
    dashboard → this project → Storage → Create Database → KV — then flip `USE_KV` to `true` in
    `lib/db.ts` (`@vercel/kv` is already a dependency). Every route already goes through that
    file's interface; only the backing store needs this step.
-3. **An Unsplash access key** (unsplash.com/developers, free, 50 req/hour) for the hero-photo
+4. **An Unsplash access key** (unsplash.com/developers, free, 50 req/hour) for the hero-photo
    search. Optional — generation falls back to the icon treatment with no key set.
 
 See `.env.example` for the full list of environment variables.
