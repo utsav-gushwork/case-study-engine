@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Providers from "@/components/Providers";
-import TopBar from "@/components/TopBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -8,6 +7,10 @@ export const metadata: Metadata = {
   description: "Bulk case-study generator — CSV/Doc in, on-brand pages out.",
 };
 
+// Deliberately bare: a generated case study (/preview/[id], /case-study/
+// [slug]) shares this shell but nothing else — no nav bar, no reading-
+// column width, no background texture. Those belong to the tool's own
+// pages only, added by app/(studio)/layout.tsx.
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -17,10 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2/src/fill/style.css" />
       </head>
       <body>
-        <Providers>
-          <TopBar />
-          <main>{children}</main>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

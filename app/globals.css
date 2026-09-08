@@ -104,8 +104,12 @@ body {
 }
 /* The real Figma dot-grid tile (8x8, one soft dot), not a CSS approximation
    — see design-verification-gotchas memory: textured backgrounds need the
-   real asset. Fixed + low z-index so it sits behind every page's content. */
-body::before {
+   real asset. Fixed + low z-index so it sits behind every page's content.
+   Scoped to .studio-shell (the tool's own chrome, app/(studio)/layout.tsx)
+   rather than body — a generated case study (/preview/[id], /case-study/
+   [slug]) renders outside that group as a standalone document and must
+   never inherit this app's own decoration. */
+.studio-shell::before {
   content: "";
   position: fixed;
   inset: 0;
@@ -117,7 +121,7 @@ body::before {
 }
 /* Generate runs edge-to-edge with its own sidebar/panel surfaces already
    filling the screen — the dot texture had nothing to show through. */
-body:has(.generate-page)::before {
+.studio-shell:has(.generate-page)::before {
   display: none;
 }
 h1, h2, h3 {
