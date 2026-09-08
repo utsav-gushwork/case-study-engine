@@ -143,6 +143,23 @@ export default function GeneratePage() {
     [rows],
   );
 
+  const discardAllRows = useCallback(async () => {
+    if (!rows.length) return;
+    if (!confirm(`Delete all ${rows.length} rows? This can't be undone.`)) return;
+    await Promise.all(
+      rows.map((row) =>
+        fetch("/api/rows", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: row.id }),
+        }),
+      ),
+    );
+    setRows([]);
+    setApprovedIds(new Set());
+    setActiveId(null);
+  }, [rows]);
+
   const activeIndex = rows.findIndex((r) => r.id === activeId);
   const active = rows[activeIndex];
 
@@ -221,7 +238,14 @@ export default function GeneratePage() {
       <div className="generate-layout">
         <div className="generate-sidebar">
           <div className="rows-head-wrap">
-            <p className="rows-head">{rows.length} rows</p>
+            <div className="rows-head-row">
+              <p className="rows-head">{rows.length} rows</p>
+              {rows.length > 0 && (
+                <button className="rows-delete-all" onClick={discardAllRows} type="button">
+                  Delete all
+                </button>
+              )}
+            </div>
             <div className="row-list">
               {rows.map((row, i) => {
                 const processing = processingIds.has(row.id);
