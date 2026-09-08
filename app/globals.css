@@ -115,6 +115,11 @@ body::before {
   pointer-events: none;
   z-index: 0;
 }
+/* Generate runs edge-to-edge with its own sidebar/panel surfaces already
+   filling the screen — the dot texture had nothing to show through. */
+body:has(.generate-page)::before {
+  display: none;
+}
 h1, h2, h3 {
   font-family: var(--gw-font-display);
   color: var(--gw-fg-1);
