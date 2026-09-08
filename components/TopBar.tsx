@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import { AUTH_ENABLED } from "@/lib/auth";
 
 export default function TopBar() {
   const { data: session } = useSession();
@@ -13,13 +14,11 @@ export default function TopBar() {
         <Link href="/published" className="topbar-link">
           View published →
         </Link>
-        {session?.user ? (
+        {AUTH_ENABLED && session?.user && (
           <span className="hint">
             {session.user.email}{" "}
             <button onClick={() => signOut()}>Sign out</button>
           </span>
-        ) : (
-          <button onClick={() => signIn("google")}>Sign in</button>
         )}
       </div>
     </div>

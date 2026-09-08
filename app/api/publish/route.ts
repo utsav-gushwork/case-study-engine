@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { authOptions, AUTH_ENABLED } from "@/lib/auth";
 import { saveDraft, publish, getCaseStudy } from "@/lib/db";
 import { missingFields } from "@/lib/schema";
 import { pingUnsplashDownload } from "@/lib/unsplash";
@@ -11,12 +11,14 @@ import type { CaseStudyRow } from "@/lib/schema";
 // publish — see the PRD: the template was reviewed once, a generated page
 // introduces no new design decision.
 //
-// Attribution always comes from the server-side session, never a client-
-// supplied field — that's the whole point of gating this route on login.
+// Attribution comes from the server-side session, never a client-supplied
+// field. Phase 1 (AUTH_ENABLED false) has no session to read, so rows are
+// attributed as "unattributed" instead of 401ing — real attribution starts
+// the moment phase 2 flips the flag on, no other code change needed.
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  const who = session?.user?.email;
+  const who = session?.user?.email ?? (AUTH_ENABLED ? undefined : "unattributed");
   if (!who) {
     return NextResponse.json({ error: "Sign in required" }, { status: 401 });
   }

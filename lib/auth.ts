@@ -1,6 +1,13 @@
 import type { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
+// Phase 2, per Utsav (8 Sep 2026): ship the tool first, roll the Google
+// gate out later. While this is false, middleware.ts waves every route
+// through unauthenticated and the publish route attributes rows as
+// "unattributed" instead of a signed-in email. Flip once a Google OAuth
+// client exists (see README) — no other code changes needed.
+export const AUTH_ENABLED = false;
+
 // Restricts sign-in to the company's Google Workspace domain, so login
 // doubles as the access gate the tool needs (Utsav's ask: track who
 // created/published each case study). Change or remove ALLOWED_DOMAIN if a
